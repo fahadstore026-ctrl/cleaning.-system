@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام تتبع النظافة المتقدم</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root { --primary: #2563eb; --primary-hover: #1d4ed8; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; --border: #e2e8f0; --radius: 12px; --shadow: 0 4px 14px rgba(0,0,0,0.08); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); direction: rtl; transition: 0.3s; }
+    [dir="ltr"] { direction: ltr; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .view { display: none; background: var(--card); padding: 28px; border-radius: var(--radius); box-shadow: var(--shadow); animation: fade 0.3s ease; }
+    .active { display: block; }
+    @keyframes fade { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    
+    .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:12px; }
+    .lang-btn, button, .btn { padding:10px 16px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; transition:0.2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+    .btn:hover { background:var(--primary-hover); transform:translateY(-1px); }
+    .btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+    .btn-outline { background:transparent; border:2px solid var(--primary); color:var(--primary); }
+    .btn-outline:hover { background:var(--primary); color:white; }
+    .btn-danger { background:var(--danger); }
+    .btn-sm { padding:6px 10px; font-size:12px; }
+    .btn-edit { background:var(--warning); color:#000; }
+    .btn-success { background:var(--success); }
+    
+    input, select, textarea { width:100%; padding:11px 14px; margin:6px 0 14px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; background:#fafafa; transition:0.2s; }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.15); background:#fff; }
+    input[readonly] { background:#e2e8f0; cursor:not-allowed; }
+    
+    .auto-box { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; background:#eff6ff; padding:14px; border-radius:10px; border:1px dashed var(--primary); margin-bottom:18px; }
+    .auto-box span { font-weight:600; color:var(--primary); }
+    
+    .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:14px; margin-bottom:20px; }
+    .stat-card { background:#f8fafc; padding:16px; border-radius:10px; text-align:center; border:1px solid var(--border); box-shadow:0 2px 6px rgba(0,0,0,0.03); }
+    .stat-card h4 { font-size:26px; margin-bottom:4px; }
+    .stat-card p { font-size:12px; color:var(--muted); }
+    
+    .tabs { display:flex; gap:8px; margin-bottom:16px; border-bottom:2px solid var(--border); overflow-x:auto; padding-bottom:2px; }
+    .tab { padding:10px 18px; cursor:pointer; border-radius:10px 10px 0 0; background:#f1f5f9; border:1px solid var(--border); border-bottom:none; font-weight:500; }
+    .tab.active { background:var(--primary); color:white; border-color:var(--primary); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    
+    .filters { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:16px; background:#f8fafc; padding:14px; border-radius:10px; border:1px solid var(--border); align-items:end; }
+    table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; margin-top:8px; background:#fff; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+    th, td { padding:12px 10px; text-align:center; border-bottom:1px solid var(--border); }
+    th { background:#f1f5f9; font-weight:600; position:sticky; top:0; }
+    tr:hover td { background:#f8fafc; }
+    
+    .badge { padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; color:white; }
+    .bg-green { background:var(--success); } .bg-orange { background:var(--warning); color:#000; } .bg-red { background:var(--danger); } .bg-blue { background:#3b82f6; }
+    
+    .preset-btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .preset-btn { padding:7px 12px; font-size:13px; background:#e2e8f0; border:none; border-radius:6px; cursor:pointer; color:var(--text); font-weight:500; }
+    .preset-btn.active { background:var(--primary); color:white; }
+    
+    .charts-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; margin-bottom:20px; }
+    .chart-box { background:#fff; padding:16px; border-radius:10px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; backdrop-filter:blur(4px); }
+    .modal-content { background:white; padding:24px; border-radius:var(--radius); width:92%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,0.25); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .close-modal { background:none; color:#666; padding:0; font-size:22px; cursor:pointer; }
+    .close-modal:hover { color:var(--danger); }
+    
+    .hidden { display:none !important; }
+    .loading { opacity:0.6; pointer-events:none; }
+    .loading::after { content:'⏳'; margin-left:6px; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    
+    @media(max-width:768px) { .stats, .filters, .auto-box, .charts-grid { grid-template-columns:1fr; } table { display:block; overflow-x:auto; white-space:nowrap; } .top-bar { flex-direction:column; align-items:stretch; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <h2 id="appTitle">نظام تتبع النظافة المتقدم</h2>
+      <button class="lang-btn" onclick="toggleLang()">🌐 EN/AR</button>
+    </div>
+
+    <!-- 🔐 تسجيل الدخول -->
+    <div id="loginView" class="view active">
+      <form id="loginForm" style="max-width:360px; margin:50px auto;">
+        <h3 id="loginTitle" style="text-align:center; margin-bottom:20px;">تسجيل الدخول</h3>
+        <label id="lblUser">اسم المستخدم / الرقم الوظيفي</label>
+        <input type="text" id="username" required>
+        <label id="lblPass">كلمة المرور</label>
+        <input type="password" id="password" required>
+        <button type="submit" id="btnLogin">🔑 دخول</button>
+      </form>
+      <p style="text-align:center; margin-top:15px; font-size:12px; color:var(--muted);">
+        <span id="hintA">admin / 123456</span> | <span id="hintE">EMP001 / emp123</span>
+      </p>
+    </div>
+
+    <!-- 📝 نموذج الموظف -->
+    <div id="empView" class="view">
+      <div class="top-bar">
+        <h3 id="empTitle">تسجيل فحص النظافة</h3>
+        <button class="btn-outline" onclick="logout()">🚪 خروج</button>
+      </div>
+      <div class="auto-box">
+        <div><span id="lblAutoId">الرقم الوظيفي:</span> <span id="dispEmpId">-</span></div>
+        <div><span id="lblAutoName">اسم الموظف:</span> <span id="dispEmpName">-</span></div>
+      </div>
+      <form id="cleanForm">
+        <label id="lblZone">اختر الموقع</label>
+        <select id="zoneSelect" required></select>
+        <label id="lblStatus">حالة النظافة</label>
+        <div style="display:flex; gap:10px; margin:8px 0 12px;">
+          <label style="flex:1; padding:12px; border:2px solid var(--border); border-radius:8px; text-align:center; cursor:pointer; transition:0.2s;">
+            <input type="radio" name="status" value="ممتاز" required style="display:none;"> ✅ ممتاز
+          </label>
+          <label style="flex:1; padding:12px; border:2px solid var(--border); border-radius:8px; text-align:center; cursor:pointer; transition:0.2s;">
+            <input type="radio" name="status" value="يحتاج تحسين" style="display:none;"> ⚠️ يحتاج تحسين
+          </label>
+          <label style="flex:1; padding:12px; border:2px solid var(--border); border-radius:8px; text-align:center; cursor:pointer; transition:0.2s;">
+            <input type="radio" name="status" value="غير مقبول" style="display:none;"> ❌ غير مقبول
+          </label>
+        </div>
+        <div id="extraFields" class="hidden">
+          <label id="lblNotes">ملاحظات (إجباري)</label>
+          <textarea id="notes" rows="2"></textarea>
+        </div>
+        <button type="submit" id="btnSubmit" class="btn-success">📤 حفظ التقرير</button>
+      </form>
+    </div>
+
+    <!-- 📊 لوحة الإدارة -->
+    <div id="adminView" class="view">
+      <div class="top-bar">
+        <h3 id="dashTitle">لوحة الإدارة</h3>
+        <button class="btn-outline" onclick="logout()">🚪 خروج</button>
+      </div>
+      
+      <div class="stats">
+        <div class="stat-card"><h4 id="statTotal">0</h4><p id="pTotal">إجمالي التقارير</p></div>
+        <div class="stat-card"><h4 id="statExc" style="color:var(--success)">0</h4><p id="pExc">ممتاز</p></div>
+        <div class="stat-card"><h4 id="statImp" style="color:var(--warning)">0</h4><p id="pImp">يحتاج تحسين</p></div>
+        <div class="stat-card"><h4 id="statUnacc" style="color:var(--danger)">0</h4><p id="pUnacc">غير مقبول</p></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('dashboard')" id="tabDashboard">📊 المؤشرات</div>
+        <div class="tab" onclick="switchTab('logs')" id="tabLogs">📋 السجلات</div>
+        <div class="tab" onclick="switchTab('zones')" id="tabZones">📍 المناطق</div>
+        <div class="tab" onclick="switchTab('emps')" id="tabEmps">👥 الموظفين</div>
+      </div>
+
+      <!-- 📊 المؤشرات -->
+      <div id="dashboardTab" class="tab-content active">
+        <div class="preset-btns">
+          <button class="preset-btn active" onclick="setDatePreset('today')" id="btnToday">اليوم</button>
+          <button class="preset-btn" onclick="setDatePreset('week')" id="btnWeek">هذا الأسبوع</button>
+          <button class="preset-btn" onclick="setDatePreset('month')" id="btnMonth">هذا الشهر</button>
+          <button class="preset-btn" onclick="setDatePreset('all')" id="btnAll">كل الفترات</button>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-box"><div class="chart-header" id="chartTitle1">توزيع حالات النظافة</div><canvas id="statusChart"></canvas></div>
+          <div class="chart-box"><div class="chart-header" id="chartTitle2">الأداء حسب الموقع</div><canvas id="zoneChart"></canvas></div>
+          <div class="chart-box" style="grid-column:1/-1;"><div class="chart-header" id="chartTitle3">اتجاه الفحوصات (يومي)</div><canvas id="trendChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- 📋 السجلات -->
+      <div id="logsTab" class="tab-content">
+        <div class="filters">
+          <input type="date" id="filterDate">
+          <select id="filterZone"><option value="">كل المناطق</option></select>
+          <select id="filterStatus"><option value="">كل الحالات</option></select>
+          <input type="text" id="filterEmp" placeholder="بحث باسم أو رقم الموظف">
+          <button onclick="loadLogs()" id="btnFilter">🔍 تصفية</button>
+          <button class="btn-outline" onclick="exportExcel()" id="btnExcel">📥 Excel</button>
+          <button class="btn-outline" onclick="exportPDF()" id="btnPdf">📥 PDF</button>
+        </div>
+        <table id="logsTable">
+          <thead><tr id="tableHead"></tr></thead>
+          <tbody id="logsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 📍 المناطق -->
+      <div id="zonesTab" class="tab-content">
+        <form id="zoneForm" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+          <input type="text" id="zoneId" placeholder="معرف (Z01)" required style="flex:1;">
+          <input type="text" id="zoneNameAR" placeholder="العربي" required style="flex:2;">
+          <input type="text" id="zoneNameEN" placeholder="English" required style="flex:2;">
+          <button type="submit" id="btnAddZone">➕ إضافة</button>
+        </form>
+        <div id="zonesList"></div>
+      </div>
+
+      <!-- 👥 الموظفين -->
+      <div id="empsTab" class="tab-content">
+        <form id="empForm" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+          <input type="text" id="empNewId" placeholder="رقم وظيفي" required style="flex:1;">
+          <input type="text" id="empNewNameAR" placeholder="العربي" required style="flex:2;">
+          <input type="text" id="empNewNameEN" placeholder="English" required style="flex:2;">
+          <input type="text" id="empNewPass" placeholder="كلمة المرور" required style="flex:2;">
+          <button type="submit" id="btnAddEmp">➕ إضافة</button>
+        </form>
+        <div id="empsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ النوافذ المنبثقة -->
+  <div id="editEmpModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h4 id="editEmpTitle">تعديل بيانات الموظف</h4><button class="close-modal" onclick="closeModals()">✖</button></div>
+      <input type="hidden" id="editEmpOldId">
+      <label>الرقم الوظيفي</label><input type="text" id="editEmpId" readonly>
+      <label>الاسم بالعربي</label><input type="text" id="editEmpAr">
+      <label>Name in English</label><input type="text" id="editEmpEn">
+      <label>كلمة المرور الجديدة (اختياري)</label><input type="text" id="editEmpPass">
+      <button onclick="saveEditEmp()" id="btnSaveEmp">💾 حفظ التعديلات</button>
+    </div>
+  </div>
+
+  <div id="editLogModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h4 id="editLogTitle">تعديل التوقيت / الملاحظات</h4><button class="close-modal" onclick="closeModals()">✖</button></div>
+      <input type="hidden" id="editLogId">
+      <label>التاريخ</label><input type="date" id="editLogDate">
+      <label>الوقت</label><input type="time" id="editLogTime">
+      <label>ملاحظات</label><textarea id="editLogNotes" rows="2"></textarea>
+      <button onclick="saveEditLog()" id="btnSaveLog">💾 حفظ التغييرات</button>
+    </div>
+  </div>
+
+  <div id="pdfExport" style="position:absolute; left:-9999px;"></div>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+    let token = localStorage.getItem('token');
+    let user = JSON.parse(localStorage.getItem('user') || 'null');
+    let lang = localStorage.getItem('lang') || 'ar';
+    let logsData = [];
+    let charts = {};
+    let datePreset = 'all';
+
+    const i18n = {
+      ar: { title:"نظام تتبع النظافة المتقدم", loginTitle:"تسجيل الدخول", userLbl:"اسم المستخدم / الرقم الوظيفي", passLbl:"كلمة المرور", loginBtn:"🔑 دخول", hintA:"admin / 123456", hintE:"EMP001 / emp123",
+            empTitle:"تسجيل فحص النظافة", logout:"🚪 خروج", autoId:"الرقم الوظيفي:", autoName:"اسم الموظف:", zoneLbl:"اختر الموقع", statusLbl:"حالة النظافة", notesLbl:"ملاحظات (إجباري)",
+            submitBtn:"📤 حفظ التقرير", saved:"✅ تم حفظ التقرير بنجاح", dashTitle:"لوحة الإدارة", pTotal:"إجمالي", pExc:"ممتاز", pImp:"تحسين", pUnacc:"غير مقبول",
+            tabDashboard:"📊 المؤشرات", tabLogs:"📋 السجلات", tabZones:"📍 المناطق", tabEmps:"👥 الموظفين", filterBtn:"🔍 تصفية", excelBtn:"📥 Excel", pdfBtn:"📥 PDF",
+            thDate:"التاريخ", thTime:"الوقت", thZone:"الموقع", thEmp:"الموظف", thStatus:"الحالة", thNotes:"ملاحظات", thAct:"إجراءات",
+            exc:"ممتاز", imp:"يحتاج تحسين", unacc:"غير مقبول", noData:"لا توجد بيانات", del:"حذف", edit:"تعديل", added:"تمت الإضافة", missing:"يرجى ملء جميع الحقول", notesReq:"⚠️ أضف ملاحظات عند اختيار غير ممتاز",
+            editEmp:"تعديل بيانات الموظف", editLog:"تعديل التوقيت", save:"💾 حفظ التعديلات",
+            today:"اليوم", week:"هذا الأسبوع", month:"هذا الشهر", all:"كل الفترات",
+            cStatus:"توزيع حالات النظافة", cZone:"الأداء حسب الموقع", cTrend:"اتجاه الفحوصات (يومي)"
+      },
+      en: { title:"Cleaning Tracking System", loginTitle:"Login", userLbl:"Username / Employee ID", passLbl:"Password", loginBtn:"🔑 Login", hintA:"admin / 123456", hintE:"EMP001 / emp123",
+            empTitle:"Log Inspection", logout:"🚪 Logout", autoId:"Employee ID:", autoName:"Employee Name:", zoneLbl:"Select Location", statusLbl:"Cleanliness Status", notesLbl:"Notes (Required)",
+            submitBtn:"📤 Save Report", saved:"✅ Report saved", dashTitle:"Admin Dashboard", pTotal:"Total", pExc:"Excellent", pImp:"Improvement", pUnacc:"Unacceptable",
+            tabDashboard:"📊 Dashboard", tabLogs:"📋 Logs", tabZones:"📍 Zones", tabEmps:"👥 Employees", filterBtn:"🔍 Filter", excelBtn:"📥 Excel", pdfBtn:"📥 PDF",
+            thDate:"Date", thTime:"Time", thZone:"Location", thEmp:"Employee", thStatus:"Status", thNotes:"Notes", thAct:"Actions",
+            exc:"Excellent", imp:"Needs Improvement", unacc:"Unacceptable", noData:"No data", del:"Delete", edit:"Edit", added:"Added", missing:"Fill all fields", notesReq:"⚠️ Notes required",
+            editEmp:"Edit Employee", editLog:"Edit Timestamp", save:"💾 Save Changes",
+            today:"Today", week:"This Week", month:"This Month", all:"All Time",
+            cStatus:"Cleanliness Distribution", cZone:"Performance by Zone", cTrend:"Daily Inspection Trend"
+      }
+    };
+
+    const t = k => i18n[lang][k];
+    const authHeaders = () => ({ 'Content-Type':'application/json', Authorization: token ? `Bearer ${token}` : '' });
+    const closeModals = () => document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
+
+    function applyLang() {
+      document.documentElement.lang = lang; document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+      const map = {appTitle:'title', loginTitle:'loginTitle', lblUser:'userLbl', lblPass:'passLbl', btnLogin:'loginBtn', hintA:'hintA', hintE:'hintE',
+                   empTitle:'empTitle', btnLogoutEmp:'logout', btnLogoutAdmin:'logout', lblAutoId:'autoId', lblAutoName:'autoName', lblZone:'zoneLbl',
+                   lblStatus:'statusLbl', lblNotes:'notesLbl', btnSubmit:'submitBtn', dashTitle:'dashTitle', pTotal:'pTotal', pExc:'pExc', pImp:'pImp', pUnacc:'pUnacc',
+                   tabDashboard:'tabDashboard', tabLogs:'tabLogs', tabZones:'tabZones', tabEmps:'tabEmps', btnFilter:'filterBtn', btnExcel:'excelBtn', btnPdf:'pdfBtn',
+                   btnAddZone:'', btnAddEmp:'', editEmpTitle:'editEmp', editLogTitle:'editLog', btnSaveEmp:'save', btnSaveLog:'save',
+                   btnToday:'today', btnWeek:'week', btnMonth:'month', btnAll:'all',
+                   chartTitle1:'cStatus', chartTitle2:'cZone', chartTitle3:'cTrend'};
+      for(let[id,key] of Object.entries(map)) {
+        const el = document.getElementById(id);
+        if(el) { el.tagName==='INPUT'||el.tagName==='TEXTAREA' ? el.placeholder = t(key) : el.textContent = t(key); }
+      }
+      updateUI();
+    }
+    window.toggleLang = () => { lang = lang==='ar'?'en':'ar'; localStorage.setItem('lang', lang); applyLang(); };
+
+    async function apiCall(url, method='GET', body=null) {
+      const opts = { method, headers: authHeaders() };
+      if(body) opts.body = JSON.stringify(body);
+      const res = await fetch(url, opts);
+      if(!res.ok) { const e = await res.json(); throw new Error(e.error||'خطأ في الاتصال'); }
+      return res.json();
+    }
+
+    async function loadZones() {
+      const zones = await apiCall(`${API}/zones`);
+      document.getElementById('zoneSelect').innerHTML = `<option value="">-- اختر --</option>` + zones.map(z=>`<option value="${z.id}">${lang==='ar'?z.name_ar:z.name_en}</option>`).join('');
+      document.getElementById('filterZone').innerHTML = `<option value="">${lang==='ar'?'كل المناطق':'All Zones'}</option>` + zones.map(z=>`<option value="${z.id}">${lang==='ar'?z.name_ar:z.name_en}</option>`).join('');
+      renderZonesList(zones);
+    }
+
+    async function loadLogs() {
+      try {
+        logsData = await apiCall(`${API}/logs`);
+        let filtered = [...logsData];
+        const fd=document.getElementById('filterDate').value, fz=document.getElementById('filterZone').value, fs=document.getElementById('filterStatus').value, fe=document.getElementById('filterEmp').value.toLowerCase();
+        if(fd) filtered=filtered.filter(l=>l.date.startsWith(fd));
+        if(fz) filtered=filtered.filter(l=>l.zone_id===fz);
+        if(fs) filtered=filtered.filter(l=>l.status===fs);
+        if(fe) filtered=filtered.filter(l=>(l.emp_name_ar||l.emp_name_en).toLowerCase().includes(fe)||l.emp_id.toLowerCase().includes(fe));
+        
+        document.getElementById('tableHead').innerHTML = [t('thDate'),t('thTime'),t('thZone'),t('thEmp'),t('thStatus'),t('thNotes'),t('thAct')].map(x=>`<th>${x}</th>`).join('');
+        document.getElementById('logsBody').innerHTML = filtered.length ? filtered.map(l=>{
+          const cls = l.status==='ممتاز'?'bg-green':l.status==='غير مقبول'?'bg-red':'bg-orange';
+          return `<tr><td>${l.date}</td><td>${l.time}</td><td>${lang==='ar'?l.name_ar:l.name_en}</td><td>${lang==='ar'?l.emp_name_ar:l.emp_name_en}</td><td><span class="badge ${cls}">${l.status}</span></td><td>${l.notes}</td>
+                  <td><button class="btn-sm btn-edit" onclick="openEditLog('${l.id}')">${t('edit')}</button><button class="btn-sm btn-danger" onclick="delLog('${l.id}')">${t('del')}</button>${l.edited?'<span class="badge bg-blue">🔄</span>':''}</td></tr>`;
+        }).join('') : `<tr><td colspan="7">${t('noData')}</td></tr>`;
+        
+        document.getElementById('statTotal').textContent = logsData.length;
+        document.getElementById('statExc').textContent = logsData.filter(l=>l.status==='ممتاز').length;
+        document.getElementById('statImp').textContent = logsData.filter(l=>l.status==='يحتاج تحسين').length;
+        document.getElementById('statUnacc').textContent = logsData.filter(l=>l.status==='غير مقبول').length;
+        updateCharts();
+      } catch(e) { alert(e.message); }
+    }
+
+    function renderZonesList(zones) {
+      document.getElementById('zonesList').innerHTML = zones.map(z=>`<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--border);"><span>${lang==='ar'?z.name_ar:z.name_en}</span><button class="btn-sm btn-danger" onclick="delZone('${z.id}')">${t('del')}</button></div>`).join('');
+    }
+
+    async function loadEmployees() {
+      const emps = await apiCall(`${API}/employees`);
+      document.getElementById('empsList').innerHTML = emps.map(e=>`<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--border);"><span>${lang==='ar'?e.name_ar:e.name_en} (${e.id})</span><div><button class="btn-sm btn-edit" onclick="openEditEmp('${e.id}')">${t('edit')}</button><button class="btn-sm btn-danger" onclick="delEmp('${e.id}')">${t('del')}</button></div></div>`).join('');
+    }
+
+    function updateUI() {
+      loadZones(); loadLogs(); loadEmployees();
+      document.querySelectorAll('input[name="status"]').forEach(r=>{
+        r.onchange = e => document.getElementById('extraFields').classList.toggle('hidden', e.target.value!=='يحتاج تحسين' && e.target.value!=='غير مقبول');
+      });
+    }
+
+    // 🔐 تسجيل الدخول
+    document.getElementById('loginForm').onsubmit = async e => {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      btn.classList.add('loading');
+      try {
+        const res = await apiCall(`${API}/login`, 'POST', { username: document.getElementById('username').value.trim(), password: document.getElementById('password').value });
+        token = res.token; user = res.user;
+        localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(user));
+        btn.classList.remove('loading');
+        showView(user.role==='admin'?'adminView':'empView');
+      } catch(e) { alert(e.message); btn.classList.remove('loading'); }
+    };
+
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if(id==='empView') {
+        document.getElementById('dispEmpId').textContent = user.id;
+        document.getElementById('dispEmpName').textContent = lang==='ar'?user.name_ar:user.name_en;
+      }
+    }
+    window.logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); token=null; user=null; location.reload(); };
+
+    // 📝 نموذج الموظف
+    document.getElementById('cleanForm').onsubmit = async e => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmit');
+      const status = document.querySelector('input[name="status"]:checked')?.value;
+      if((status==='يحتاج تحسين'||status==='غير مقبول') && !document.getElementById('notes').value.trim()) return alert(t('notesReq'));
+      const zoneId = document.getElementById('zoneSelect').value;
+      if(!zoneId) return alert(t('missing'));
+      
+      btn.classList.add('loading');
+      try {
+        const now = new Date();
+        await apiCall(`${API}/logs`, 'POST', {
+          zone_id: zoneId, status, notes: document.getElementById('notes').value,
+          date: now.toLocaleDateString('ar-SA'), time: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+        });
+        btn.classList.remove('loading');
+        alert(t('saved'));
+        document.getElementById('cleanForm').reset();
+        document.getElementById('extraFields').classList.add('hidden');
+        loadLogs();
+      } catch(e) { alert(e.message); btn.classList.remove('loading'); }
+    };
+
+    // 📊 إدارة التبويبات والفلاتر
+    window.switchTab = tab => {
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      document.getElementById(tab+'Tab').classList.add('active');
+      document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+      if(tab==='dashboard') setTimeout(updateCharts, 100);
+    };
+    window.setDatePreset = preset => {
+      datePreset = preset;
+      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById('btn'+preset.charAt(0).toUpperCase()+preset.slice(1)).classList.add('active');
+      updateCharts();
+    };
+
+    // ✏️ النوافذ المنبثقة
+    window.openEditEmp = async id => {
+      const emps = await apiCall(`${API}/employees`);
+      const emp = emps.find(e=>e.id===id);
+      if(!emp) return;
+      document.getElementById('editEmpOldId').value = emp.id;
+      document.getElementById('editEmpId').value = emp.id;
+      document.getElementById('editEmpAr').value = emp.name_ar;
+      document.getElementById('editEmpEn').value = emp.name_en;
+      document.getElementById('editEmpPass').value = '';
+      document.getElementById('editEmpModal').classList.remove('hidden');
+    };
+    window.saveEditEmp = async () => {
+      const btn = document.getElementById('btnSaveEmp');
+      btn.classList.add('loading');
+      try {
+        await apiCall(`${API}/employees/${document.getElementById('editEmpOldId').value}`, 'PUT', {
+          name_ar: document.getElementById('editEmpAr').value.trim(),
+          name_en: document.getElementById('editEmpEn').value.trim(),
+          password: document.getElementById('editEmpPass').value
+        });
+        btn.classList.remove('loading');
+        closeModals(); loadEmployees(); alert(t('added'));
+      } catch(e) { alert(e.message); btn.classList.remove('loading'); }
+    };
+    window.openEditLog = id => {
+      const log = logsData.find(l=>l.id===id);
+      if(!log) return;
+      document.getElementById('editLogId').value = log.id;
+      document.getElementById('editLogDate').value = log.date.split('/').reverse().join('-');
+      document.getElementById('editLogTime').value = log.time;
+      document.getElementById('editLogNotes').value = log.notes === '-' ? '' : log.notes;
+      document.getElementById('editLogModal').classList.remove('hidden');
+    };
+    window.saveEditLog = async () => {
+      const btn = document.getElementById('btnSaveLog');
+      btn.classList.add('loading');
+      try {
+        await apiCall(`${API}/logs/${document.getElementById('editLogId').value}`, 'PUT', {
+          date: document.getElementById('editLogDate').value,
+          time: document.getElementById('editLogTime').value,
+          notes: document.getElementById('editLogNotes').value.trim() || '-'
+        });
+        btn.classList.remove('loading');
+        closeModals(); loadLogs(); alert('✅ تم التعديل بنجاح');
+      } catch(e) { alert(e.message); btn.classList.remove('loading'); }
+    };
+    window.delZone = async id => { if(confirm(t('del')+'?')) { await apiCall(`${API}/zones/${id}`, 'DELETE'); loadZones(); } };
+    window.delEmp = async id => { if(confirm(t('del')+'?')) { await apiCall(`${API}/employees/${id}`, 'DELETE'); loadEmployees(); } };
+    window.delLog = async id => { if(confirm(t('del')+'?')) { await apiCall(`${API}/logs/${id}`, 'DELETE'); loadLogs(); } };
+
+    // 📈 الرسوم البيانية
+    function updateCharts() {
+      const filteredLogs = logsData.filter(l => {
+        const now = new Date();
+        const d = new Date(l.ts);
+        if(datePreset==='today') return d.toDateString()===now.toDateString();
+        if(datePreset==='week') { const start = new Date(now); start.setDate(now.getDate()-now.getDay()); return d>=start; }
+        if(datePreset==='month') return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+        return true;
+      });
+
+      const labels = { exc: t('exc'), imp: t('imp'), unacc: t('unacc') };
+      const statusData = [filteredLogs.filter(l=>l.status==='ممتاز').length, filteredLogs.filter(l=>l.status==='يحتاج تحسين').length, filteredLogs.filter(l=>l.status==='غير مقبول').length];
+      
+      charts.status?.destroy();
+      charts.status = new Chart(document.getElementById('statusChart'), {
+        type:'doughnut', data:{ labels:[labels.exc,labels.imp,labels.unacc], datasets:[{ data:statusData, backgroundColor:['#10b981','#f59e0b','#ef4444'], borderWidth:0 }] },
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'Segoe UI' } } } } }
+      });
+
+      const zoneCounts = {}; filteredLogs.forEach(l=>zoneCounts[l.zone_id]=(zoneCounts[l.zone_id]||0)+1);
+      const sorted = Object.entries(zoneCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const zLabels = sorted.map(s=>{ const z=logsData.find(l=>l.zone_id===s[0]); return z?(lang==='ar'?z.name_ar:z.name_en):s[0]; });
+      
+      charts.zone?.destroy();
+      charts.zone = new Chart(document.getElementById('zoneChart'), {
+        type:'bar', data:{ labels:zLabels, datasets:[{ label:t('pTotal'), data:sorted.map(s=>s[1]), backgroundColor:'#2563eb', borderRadius:6 }] },
+        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true, ticks:{stepSize:1}} } }
+      });
+
+      const daily = {}; filteredLogs.forEach(l=>{ const day=l.date; daily[day]=(daily[day]||0)+1; });
+      const days = Object.keys(daily).sort();
+      
+      charts.trend?.destroy();
+      charts.trend = new Chart(document.getElementById('trendChart'), {
+        type:'line', data:{ labels:days, datasets:[{ label:t('pTotal'), data:days.map(d=>daily[d]), borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.1)', fill:true, tension:0.3, pointRadius:4 }] },
+        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true} } }
+      });
+    }
+
+    // 📥 تصدير Excel
+    window.exportExcel = () => {
+      if(!logsData.length) return alert(t('noData'));
+      const filtered = getFilteredLogs();
+      const wsData = filtered.map(l=>({
+        [t('thDate')]: l.date, [t('thTime')]: l.time, [t('thZone')]: lang==='ar'?l.name_ar:l.name_en,
+        [t('thEmp')]: lang==='ar'?l.emp_name_ar:l.emp_name_en, [t('thStatus')]: l.status, [t('thNotes')]: l.notes,
+        'تم_التعديل': l.edited ? 'نعم' : 'لا'
+      }));
+      const ws = XLSX.utils.json_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'السجلات');
+      XLSX.writeFile(wb, `سجل_النظافة_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    // 📥 تصدير PDF
+    window.exportPDF = () => {
+      const filtered = getFilteredLogs();
+      if(!filtered.length) return alert(t('noData'));
+      const el = document.getElementById('pdfExport'); el.style.display='block';
+      el.innerHTML = `<div style="padding:20px; direction:${lang==='ar'?'rtl':'ltr'}; font-family:'Segoe UI',sans-serif;">
+        <h2 style="text-align:center; color:#2563eb; margin-bottom:5px;">${t('title')}</h2>
+        <p style="text-align:center; margin-bottom:20px; color:#666;">${new Date().toLocaleDateString()}</p>
+        <table style="width:100%; border-collapse:collapse; font-size:12px; border:1px solid #ddd;">
+          <thead><tr style="background:#f8fafc; border-bottom:2px solid #ddd;">${['#',t('thDate'),t('thTime'),t('thZone'),t('thEmp'),t('thStatus'),t('thNotes')].map(x=>`<th style="padding:8px; border:1px solid #ddd;">${x}</th>`).join('')}</tr></thead>
+          <tbody>${filtered.map((l,i)=>`<tr><td style="padding:6px; border:1px solid #ddd; text-align:center;">${i+1}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.date}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.time}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${lang==='ar'?l.name_ar:l.name_en}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.status}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.notes}</td></tr>`).join('')}</tbody>
+        </table></div>`;
+      html2pdf().from(el).set({ margin:10, filename:`تقرير_النظافة_${new Date().toISOString().split('T')[0]}.pdf`, image:{type:'jpeg', quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm', format:'a4', orientation:'landscape'} }).save().then(()=>el.style.display='none');
+    };
+
+    function getFilteredLogs() {
+      let logs = [...logsData];
+      const fd=document.getElementById('filterDate').value, fz=document.getElementById('filterZone').value, fs=document.getElementById('filterStatus').value, fe=document.getElementById('filterEmp').value.toLowerCase();
+      if(fd) logs=logs.filter(l=>l.date.startsWith(fd)); if(fz) logs=logs.filter(l=>l.zone_id===fz); if(fs) logs=logs.filter(l=>l.status===fs); if(fe) logs=logs.filter(l=>(l.emp_name_ar||l.emp_name_en).toLowerCase().includes(fe)||l.emp_id.toLowerCase().includes(fe));
+      return logs;
+    }
+
+    // تهيئة
+    window.onload = () => { applyLang(); if(token && user) showView(user.role==='admin'?'adminView':'empView'); else showView('loginView'); };
+  </script>
+</body>
+</html>
