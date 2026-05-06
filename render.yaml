@@ -16,6 +16,6 @@ services:
 
 databases:
   - name: cleaning-db
+    databaseName: cleaning_db
     plan: free
-    database: postgresql
     ipAllowList: []
