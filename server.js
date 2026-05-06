@@ -14,7 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change-this-in-production';
 // إعدادات عامة
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname)); // ✅ تعديل: الملفات في الجذر مباشرة
+app.use(express.static(__dirname));
 
 // ✅ اتصال PostgreSQL
 const pool = new Pool({
@@ -57,30 +57,9 @@ async function initDB() {
       )
     `);
 
-    // بيانات تجريبية (فقط إذا كان الجدول فارغاً)
-    const { rows } = await pool.query('SELECT COUNT(*) FROM users');
-    if (parseInt(rows[0].count) === 0) {
-      const hashAdmin = await bcrypt.hash('123456', 10);
-      const hashEmp = await bcrypt.hash('emp123', 10);
-      await pool.query(
-        "INSERT INTO users (id, password, role, name_ar, name_en) VALUES ($1, $2, $3, $4, $5)",
-        ['admin', hashAdmin, 'admin', 'المدير', 'Admin']
-      );
-      await pool.query(
-        "INSERT INTO users (id, password, role, name_ar, name_en) VALUES ($1, $2, $3, $4, $5)",
-        ['EMP001', hashEmp, 'emp', 'أحمد محمد', 'Ahmed']
-      );
-      await pool.query(
-        "INSERT INTO zones (id, name_ar, name_en) VALUES ($1, $2, $3)",
-        ['Z01', 'اللوبي الرئيسي', 'Main Lobby']
-      );
-      await pool.query(
-        "INSERT INTO zones (id, name_ar, name_en) VALUES ($1, $2, $3)",
-        ['Z02', 'دورات المياه - ط1', 'Restrooms - Fl1']
-      );
-      console.log('✅ تم إنشاء البيانات التجريبية');
-    }
-    console.log('✅ قاعدة البيانات جاهزة');
+    // ✅ قاعدة بيانات نظيفة - بدون بيانات تجريبية
+    console.log('✅ قاعدة البيانات جاهزة - أضف البيانات من لوحة الإدارة');
+    
   } catch (err) {
     console.error('❌ خطأ في تهيئة قاعدة البيانات:', err);
   }
@@ -227,7 +206,7 @@ app.delete('/api/logs/:id', authenticate, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ✅ خدمة الواجهة الأمامية (تعديل: index.html في الجذر)
+// خدمة الواجهة الأمامية
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -236,7 +215,4 @@ app.get('*', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
   console.log(`🌐 الرابط المحلي: http://localhost:${PORT}`);
-  if (process.env.RENDER_EXTERNAL_URL) {
-    console.log(`🌍 الرابط العام: https://${process.env.RENDER_EXTERNAL_URL}`);
-  }
 });
