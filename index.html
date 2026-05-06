@@ -7,19 +7,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --info: #3b82f6;
+            --info: #06b6d4;
             --purple: #8b5cf6;
-            --bg: #f8fafc;
+            --bg: #f1f5f9;
             --card: #ffffff;
-            --text: #0f172a;
+            --text: #1e293b;
+            --text-light: #64748b;
             --border: #e2e8f0;
             --radius: 12px;
-            --shadow: 0 4px 14px rgba(0,0,0,0.08);
         }
 
         * {
@@ -33,43 +33,47 @@
             background: var(--bg);
             min-height: 100vh;
             padding: 20px;
+            color: var(--text);
         }
 
         /* اللوجو */
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            width: 60px;
+            height: 60px;
+            background: white;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            font-size: 36px;
         }
 
         .logo-text {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 800;
-            color: var(--primary);
+            color: white;
         }
 
-        /* ✅ تنسيق الأزرار الموحد */
-        button, .btn {
+        /* الأزرار */
+        button {
             padding: 10px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -77,98 +81,136 @@
         }
 
         button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        button:active {
-            transform: translateY(0);
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-lg { padding: 14px 28px; font-size: 16px; }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        /* ✅ تنسيق الجدول المتناسق */
-        .table-container {
+        /* البطاقات */
+        .card {
             background: var(--card);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--border);
+        }
+
+        .header h2 {
+            color: var(--primary-dark);
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        /* الحقول */
+        input, select, textarea {
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            width: 100%;
+            margin: 6px 0 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* التبويبات */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* الجداول */
+        .table-container {
+            background: white;
             border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: var(--shadow);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             margin-top: 20px;
         }
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
         }
 
         thead {
-            background: #f1f5f9;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
         }
 
         th {
-            padding: 14px 16px;
+            padding: 16px;
             text-align: right;
             font-weight: 700;
-            font-size: 13px;
-            color: var(--text);
-            border-bottom: 2px solid var(--border);
+            font-size: 14px;
         }
 
         td {
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-            color: var(--text);
-        }
-
-        tbody tr {
-            transition: all 0.2s ease;
         }
 
         tbody tr:hover {
             background: #f8fafc;
         }
 
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* ✅ شارات الرتب الملونة */
+        /* الشارات */
         .badge {
             padding: 6px 14px;
             border-radius: 20px;
@@ -190,114 +232,45 @@
         .status-يحتاج-تحسين { background: var(--warning); }
         .status-غير-مقبول { background: var(--danger); }
 
-        /* تنسيقات عامة */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* الإحصائيات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .card {
-            background: var(--card);
-            padding: 24px;
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 25px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 24px;
-            animation: slideUp 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .header h2 {
-            color: var(--primary);
-            font-size: 24px;
+        .stat-card h3 {
+            font-size: 36px;
+            margin-bottom: 8px;
             font-weight: 800;
         }
 
-        input, select, textarea {
-            padding: 11px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            width: 100%;
-            margin: 6px 0 14px;
+        .stat-card p {
             font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 8px;
-        }
-
-        .tab-btn {
-            padding: 10px 20px;
-            background: #f1f5f9;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            opacity: 0.95;
         }
 
         /* تسجيل الدخول */
         #loginView {
             max-width: 450px;
-            margin: 60px auto;
+            margin: 80px auto;
             text-align: center;
         }
 
         #loginView h2 {
-            color: var(--primary);
-            font-size: 28px;
-            margin: 20px 0 30px;
+            color: var(--primary-dark);
+            font-size: 32px;
+            margin: 25px 0 30px;
             font-weight: 800;
         }
 
@@ -306,63 +279,71 @@
         }
 
         .login-logo .logo-icon {
-            width: 80px;
-            height: 80px;
-            font-size: 48px;
+            width: 100px;
+            height: 100px;
+            font-size: 56px;
             margin: 0 auto;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            color: white;
         }
 
-        .hidden {
-            display: none !important;
+        .hidden { display: none !important; }
+
+        /* النافذة المنبثقة */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
 
-        /* الإحصائيات */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
+        .modal-content {
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: var(--radius);
-            text-align: center;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .stat-card h3 {
-            font-size: 32px;
-            margin-bottom: 6px;
-            font-weight: 800;
-            color: var(--primary);
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
         }
 
-        .stat-card p {
-            font-size: 13px;
-            color: #64748b;
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0;
+            width: 40px;
+            height: 40px;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+            transform: none;
         }
 
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            table {
-                font-size: 12px;
-            }
-            
-            th, td {
-                padding: 10px;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 12px;
-                text-align: center;
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            table { font-size: 12px; }
+            th, td { padding: 10px; }
+            .header { flex-direction: column; gap: 15px; text-align: center; }
+            .tabs { justify-content: center; }
         }
     </style>
 </head>
@@ -377,20 +358,20 @@
             <h2>نظام تتبع النظافة المتقدم</h2>
             <input type="text" id="username" placeholder="اسم المستخدم / الرقم الوظيفي">
             <input type="password" id="password" placeholder="كلمة المرور">
-            <button class="btn-primary" onclick="login()" style="width: 100%; padding: 12px;">
+            <button class="btn-primary btn-lg" onclick="login()" style="width: 100%;">
                 🔑 تسجيل الدخول
             </button>
-            <p style="margin-top: 16px; color: #64748b; font-size: 13px;">
+            <p style="margin-top: 20px; color: var(--text-light); font-size: 14px;">
                 admin / admin123
             </p>
         </div>
 
         <!-- 📊 لوحة الإدارة -->
         <div id="adminView" class="hidden">
-            <!-- اللوجو في الهيدر -->
+            <!-- اللوجو -->
             <div class="logo">
                 <div class="logo-icon">✨</div>
-                <div class="logo-text">نظام النظافة</div>
+                <div class="logo-text">نظام النظافة المتقدم</div>
             </div>
 
             <div class="header">
@@ -404,11 +385,11 @@
                     <h3 id="totalEmployees">0</h3>
                     <p>إجمالي الموظفين</p>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                     <h3 id="totalZones">0</h3>
                     <p>المناطق</p>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                     <h3 id="totalLogs">0</h3>
                     <p>التقارير</p>
                 </div>
@@ -424,7 +405,7 @@
             <!-- 👥 قسم الموظفين -->
             <div id="tab-employees" class="tab-content active">
                 <div class="card">
-                    <h3 style="margin-bottom: 16px; color: var(--primary); font-size: 20px;">➕ إضافة موظف جديد</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">➕ إضافة موظف جديد</h3>
                     <div class="form-grid">
                         <input type="text" id="empId" placeholder="الرقم الوظيفي (ID)">
                         <input type="text" id="empNameAr" placeholder="الاسم بالعربي">
@@ -439,7 +420,7 @@
                             <option value="أخرى">أخرى</option>
                         </select>
                     </div>
-                    <button class="btn-success" onclick="addEmployee()" style="width: 100%;">
+                    <button class="btn-success btn-lg" onclick="addEmployee()" style="width: 100%;">
                         ✅ حفظ الموظف
                     </button>
                 </div>
@@ -450,13 +431,13 @@
             <!-- 📍 قسم المناطق -->
             <div id="tab-zones" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 16px; color: var(--primary); font-size: 20px;">📍 إضافة منطقة جديدة</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">📍 إضافة منطقة جديدة</h3>
                     <div class="form-grid">
                         <input type="text" id="zoneId" placeholder="معرف المنطقة (Z01)">
                         <input type="text" id="zoneNameAr" placeholder="الاسم بالعربي">
                         <input type="text" id="zoneNameEn" placeholder="الاسم بالإنجليزي">
                     </div>
-                    <button class="btn-success" onclick="addZone()" style="width: 100%;">
+                    <button class="btn-success btn-lg" onclick="addZone()" style="width: 100%;">
                         ✅ إضافة المنطقة
                     </button>
                 </div>
@@ -466,7 +447,7 @@
             <!-- 📋 قسم السجلات -->
             <div id="tab-logs" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 16px; color: var(--primary); font-size: 20px;">🔍 تصفية السجلات</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">🔍 تصفية السجلات</h3>
                     <div class="form-grid">
                         <input type="date" id="filterDate">
                         <select id="filterZone">
@@ -479,12 +460,39 @@
                             <option value="غير مقبول">غير مقبول</option>
                         </select>
                     </div>
-                    <button class="btn-primary" onclick="loadLogs()" style="width: 100%;">
+                    <button class="btn-primary btn-lg" onclick="loadLogs()" style="width: 100%;">
                         🔍 تطبيق الفلتر
                     </button>
                 </div>
                 <div id="logsList"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل الموظف -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--primary-dark); font-size: 22px;">✏️ تعديل بيانات الموظف</h3>
+                <button class="close-modal" onclick="closeModal()">×</button>
+            </div>
+            <input type="hidden" id="editEmpOldId">
+            <div class="form-grid">
+                <input type="text" id="editEmpId" placeholder="الرقم الوظيفي" readonly>
+                <input type="text" id="editEmpNameAr" placeholder="الاسم بالعربي">
+                <input type="text" id="editEmpNameEn" placeholder="الاسم بالإنجليزي">
+                <input type="password" id="editEmpPass" placeholder="كلمة المرور الجديدة (اختياري)">
+                <select id="editEmpRole">
+                    <option value="مدير">👔 مدير</option>
+                    <option value="استقبال">📞 استقبال</option>
+                    <option value="عامل نظافة">🧹 عامل نظافة</option>
+                    <option value="مشرف">📋 مشرف</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+            </div>
+            <button class="btn-success btn-lg" onclick="saveEdit()" style="width: 100%;">
+                💾 حفظ التعديلات
+            </button>
         </div>
     </div>
 
@@ -510,14 +518,17 @@
                 },
                 body: body ? JSON.stringify(body) : null
             });
-            if (!res.ok) throw new Error('Request failed');
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || 'Request failed');
+            }
             return res.json();
         }
 
         async function login() {
             try {
                 const res = await apiCall(`${API}/login`, 'POST', {
-                    username: document.getElementById('username').value,
+                    username: document.getElementById('username').value.trim(),
                     password: document.getElementById('password').value
                 });
                 token = res.token;
@@ -526,7 +537,7 @@
                 localStorage.setItem('user', JSON.stringify(user));
                 location.reload();
             } catch (e) {
-                alert('❌ بيانات الدخول غير صحيحة');
+                alert('❌ ' + e.message);
             }
         }
 
@@ -543,32 +554,45 @@
         }
 
         async function loadData() {
-            await loadEmployees();
-            await loadZones();
-            await loadLogs();
+            try {
+                await Promise.all([loadEmployees(), loadZones(), loadLogs()]);
+            } catch (e) {
+                console.error('Error loading data:', e);
+            }
         }
 
         // 👥 الموظفين
         async function loadEmployees() {
-            const emps = await apiCall(`${API}/employees`);
-            document.getElementById('totalEmployees').textContent = emps.length;
-            
-            let html = '<div class="table-container"><table><thead><tr>';
-            html += '<th>الرقم الوظيفي</th><th>الاسم</th><th>الرتبة</th><th>الإجراءات</th>';
-            html += '</tr></thead><tbody>';
-            
-            emps.forEach(e => {
-                const roleClass = `role-${e.role.replace(/ /g, '-')}`;
-                html += `<tr>
-                    <td><strong>${e.id}</strong></td>
-                    <td>${e.name_ar}</td>
-                    <td><span class="badge ${roleClass}">${getRoleIcon(e.role)} ${e.role}</span></td>
-                    <td><button class="btn-danger btn-sm" onclick="deleteEmployee('${e.id}')">🗑️ حذف</button></td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            document.getElementById('empList').innerHTML = html;
+            try {
+                const emps = await apiCall(`${API}/employees`);
+                document.getElementById('totalEmployees').textContent = emps.length;
+                
+                let html = '<div class="table-container"><table><thead><tr>';
+                html += '<th>الرقم الوظيفي</th><th>الاسم</th><th>الرتبة</th><th>الإجراءات</th>';
+                html += '</tr></thead><tbody>';
+                
+                if (emps.length === 0) {
+                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">لا يوجد موظفين</td></tr>';
+                } else {
+                    emps.forEach(e => {
+                        const roleClass = `role-${e.role.replace(/ /g, '-')}`;
+                        html += `<tr>
+                            <td><strong>${e.id}</strong></td>
+                            <td>${e.name_ar}</td>
+                            <td><span class="badge ${roleClass}">${getRoleIcon(e.role)} ${e.role}</span></td>
+                            <td>
+                                <button class="btn-warning btn-sm" onclick="openEdit('${e.id}')">✏️ تعديل</button>
+                                <button class="btn-danger btn-sm" onclick="deleteEmployee('${e.id}')">🗑️ حذف</button>
+                            </td>
+                        </tr>`;
+                    });
+                }
+                
+                html += '</tbody></table></div>';
+                document.getElementById('empList').innerHTML = html;
+            } catch (e) {
+                alert('❌ فشل تحميل الموظفين: ' + e.message);
+            }
         }
 
         function getRoleIcon(role) {
@@ -582,95 +606,178 @@
         }
 
         async function addEmployee() {
+            const id = document.getElementById('empId').value.trim();
+            const nameAr = document.getElementById('empNameAr').value.trim();
+            const nameEn = document.getElementById('empNameEn').value.trim();
+            const password = document.getElementById('empPass').value;
             const role = document.getElementById('empRole').value;
-            if (!role) return alert('⚠️ يرجى اختيار الرتبة الوظيفية');
-            
+
+            if (!id || !nameAr || !nameEn || !password || !role) {
+                return alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
+            }
+
             try {
                 await apiCall(`${API}/employees`, 'POST', {
-                    id: document.getElementById('empId').value,
-                    name_ar: document.getElementById('empNameAr').value,
-                    name_en: document.getElementById('empNameEn').value,
-                    password: document.getElementById('empPass').value,
-                    role: role
+                    id, name_ar: nameAr, name_en: nameEn, password, role
                 });
                 alert('✅ تم إضافة الموظف بنجاح');
+                // تفريغ الحقول
                 document.getElementById('empId').value = '';
                 document.getElementById('empNameAr').value = '';
                 document.getElementById('empNameEn').value = '';
                 document.getElementById('empPass').value = '';
                 document.getElementById('empRole').value = '';
-                loadEmployees();
+                await loadEmployees();
             } catch (e) {
-                alert('❌ فشل إضافة الموظف');
+                alert('❌ فشل إضافة الموظف: ' + e.message);
+            }
+        }
+
+        function openEdit(id) {
+            // سيتم ملء البيانات عبر loadEmployees ثم فتح النافذة
+            loadEmployeeData(id);
+        }
+
+        async function loadEmployeeData(id) {
+            try {
+                const emps = await apiCall(`${API}/employees`);
+                const emp = emps.find(e => e.id === id);
+                if (!emp) return;
+
+                document.getElementById('editEmpOldId').value = emp.id;
+                document.getElementById('editEmpId').value = emp.id;
+                document.getElementById('editEmpNameAr').value = emp.name_ar;
+                document.getElementById('editEmpNameEn').value = emp.name_en;
+                document.getElementById('editEmpPass').value = '';
+                document.getElementById('editEmpRole').value = emp.role;
+                
+                document.getElementById('editModal').classList.remove('hidden');
+            } catch (e) {
+                alert('❌ فشل تحميل البيانات: ' + e.message);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        async function saveEdit() {
+            const oldId = document.getElementById('editEmpOldId').value;
+            const newId = document.getElementById('editEmpId').value.trim();
+            const nameAr = document.getElementById('editEmpNameAr').value.trim();
+            const nameEn = document.getElementById('editEmpNameEn').value.trim();
+            const password = document.getElementById('editEmpPass').value;
+            const role = document.getElementById('editEmpRole').value;
+
+            if (!newId || !nameAr || !nameEn || !role) {
+                return alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
+            }
+
+            try {
+                const body = { name_ar: nameAr, name_en: nameEn, role };
+                if (password) body.password = password;
+                
+                await apiCall(`${API}/employees/${oldId}`, 'PUT', body);
+                alert('✅ تم تعديل البيانات بنجاح');
+                closeModal();
+                await loadEmployees();
+            } catch (e) {
+                alert('❌ فشل التعديل: ' + e.message);
             }
         }
 
         async function deleteEmployee(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الموظف؟')) {
+            if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
+            
+            try {
                 await apiCall(`${API}/employees/${id}`, 'DELETE');
-                loadEmployees();
+                alert('✅ تم حذف الموظف بنجاح');
+                await loadEmployees();
+            } catch (e) {
+                alert('❌ فشل الحذف: ' + e.message);
             }
         }
 
         // 📍 المناطق
         async function loadZones() {
-            const zones = await apiCall(`${API}/zones`);
-            document.getElementById('totalZones').textContent = zones.length;
-            allZones = zones;
-            
-            let html = '<div class="table-container"><table><thead><tr>';
-            html += '<th>المعرف</th><th>الاسم (عربي)</th><th>الاسم (إنجليزي)</th><th>الإجراءات</th>';
-            html += '</tr></thead><tbody>';
-            
-            zones.forEach(z => {
-                html += `<tr>
-                    <td><strong>${z.id}</strong></td>
-                    <td>${z.name_ar}</td>
-                    <td>${z.name_en}</td>
-                    <td><button class="btn-danger btn-sm" onclick="deleteZone('${z.id}')">🗑️ حذف</button></td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            document.getElementById('zoneList').innerHTML = html;
-            
-            // تحديث فلتر المناطق
-            const filterSelect = document.getElementById('filterZone');
-            filterSelect.innerHTML = '<option value="">كل المناطق</option>';
-            zones.forEach(z => {
-                filterSelect.innerHTML += `<option value="${z.id}">${z.name_ar}</option>`;
-            });
+            try {
+                const zones = await apiCall(`${API}/zones`);
+                document.getElementById('totalZones').textContent = zones.length;
+                allZones = zones;
+                
+                let html = '<div class="table-container"><table><thead><tr>';
+                html += '<th>المعرف</th><th>الاسم (عربي)</th><th>الاسم (إنجليزي)</th><th>الإجراءات</th>';
+                html += '</tr></thead><tbody>';
+                
+                if (zones.length === 0) {
+                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">لا توجد مناطق</td></tr>';
+                } else {
+                    zones.forEach(z => {
+                        html += `<tr>
+                            <td><strong>${z.id}</strong></td>
+                            <td>${z.name_ar}</td>
+                            <td>${z.name_en}</td>
+                            <td><button class="btn-danger btn-sm" onclick="deleteZone('${z.id}')">🗑️ حذف</button></td>
+                        </tr>`;
+                    });
+                }
+                
+                html += '</tbody></table></div>';
+                document.getElementById('zoneList').innerHTML = html;
+                
+                // تحديث فلتر المناطق
+                const filterSelect = document.getElementById('filterZone');
+                filterSelect.innerHTML = '<option value="">كل المناطق</option>';
+                zones.forEach(z => {
+                    filterSelect.innerHTML += `<option value="${z.id}">${z.name_ar}</option>`;
+                });
+            } catch (e) {
+                alert('❌ فشل تحميل المناطق: ' + e.message);
+            }
         }
 
         async function addZone() {
+            const id = document.getElementById('zoneId').value.trim();
+            const nameAr = document.getElementById('zoneNameAr').value.trim();
+            const nameEn = document.getElementById('zoneNameEn').value.trim();
+
+            if (!id || !nameAr || !nameEn) {
+                return alert('⚠️ يرجى ملء جميع الحقول');
+            }
+
             try {
-                await apiCall(`${API}/zones`, 'POST', {
-                    id: document.getElementById('zoneId').value,
-                    name_ar: document.getElementById('zoneNameAr').value,
-                    name_en: document.getElementById('zoneNameEn').value
-                });
+                await apiCall(`${API}/zones`, 'POST', { id, name_ar: nameAr, name_en: nameEn });
                 alert('✅ تم إضافة المنطقة بنجاح');
                 document.getElementById('zoneId').value = '';
                 document.getElementById('zoneNameAr').value = '';
                 document.getElementById('zoneNameEn').value = '';
-                loadZones();
+                await loadZones();
             } catch (e) {
-                alert('❌ فشل إضافة المنطقة');
+                alert('❌ فشل إضافة المنطقة: ' + e.message);
             }
         }
 
         async function deleteZone(id) {
-            if (confirm('هل أنت متأكد من حذف هذه المنطقة؟')) {
+            if (!confirm('هل أنت متأكد من حذف هذه المنطقة؟')) return;
+            
+            try {
                 await apiCall(`${API}/zones/${id}`, 'DELETE');
-                loadZones();
+                alert('✅ تم حذف المنطقة بنجاح');
+                await loadZones();
+            } catch (e) {
+                alert('❌ فشل الحذف: ' + e.message);
             }
         }
 
         // 📋 السجلات
         async function loadLogs() {
-            allLogs = await apiCall(`${API}/logs`);
-            document.getElementById('totalLogs').textContent = allLogs.length;
-            displayLogs(allLogs);
+            try {
+                allLogs = await apiCall(`${API}/logs`);
+                document.getElementById('totalLogs').textContent = allLogs.length;
+                displayLogs(allLogs);
+            } catch (e) {
+                alert('❌ فشل تحميل السجلات: ' + e.message);
+            }
         }
 
         function displayLogs(logs) {
@@ -678,29 +785,46 @@
             html += '<th>التاريخ</th><th>الوقت</th><th>المنطقة</th><th>الموظف</th><th>الرتبة</th><th>الحالة</th><th>الملاحظات</th><th>الإجراءات</th>';
             html += '</tr></thead><tbody>';
             
-            logs.forEach(l => {
-                const statusClass = `status-${l.status.replace(/ /g, '-')}`;
-                const roleClass = `role-${(l.emp_role || '').replace(/ /g, '-')}`;
-                html += `<tr>
-                    <td>${l.date}</td>
-                    <td>${l.time}</td>
-                    <td>${l.zone_name_ar || l.zone_name_en}</td>
-                    <td>${l.emp_name_ar || l.emp_name_en}</td>
-                    <td><span class="badge ${roleClass}">${getRoleIcon(l.emp_role)} ${l.emp_role || '-'}</span></td>
-                    <td><span class="badge ${statusClass}">${l.status}</span></td>
-                    <td>${l.notes}</td>
-                    <td><button class="btn-danger btn-sm" onclick="deleteLog('${l.id}')">🗑️ حذف</button></td>
-                </tr>`;
-            });
+            if (logs.length === 0) {
+                html += '<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">لا توجد سجلات</td></tr>';
+            } else {
+                logs.forEach(l => {
+                    const statusClass = `status-${l.status.replace(/ /g, '-')}`;
+                    const roleClass = `role-${(l.emp_role || 'أخرى').replace(/ /g, '-')}`;
+                    html += `<tr>
+                        <td>${l.date}</td>
+                        <td>${l.time}</td>
+                        <td>${l.zone_name_ar || l.zone_name_en}</td>
+                        <td>${l.emp_name_ar || l.emp_name_en}</td>
+                        <td><span class="badge ${roleClass}">${getRoleIcon(l.emp_role)} ${l.emp_role || '-'}</span></td>
+                        <td><span class="badge ${statusClass}">${l.status}</span></td>
+                        <td>${l.notes}</td>
+                        <td><button class="btn-danger btn-sm" onclick="deleteLog('${l.id}')">🗑️ حذف</button></td>
+                    </tr>`;
+                });
+            }
             
             html += '</tbody></table></div>';
             document.getElementById('logsList').innerHTML = html;
         }
 
         async function deleteLog(id) {
-            if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+            if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+            
+            try {
                 await apiCall(`${API}/logs/${id}`, 'DELETE');
-                loadLogs();
+                alert('✅ تم حذف السجل بنجاح');
+                await loadLogs();
+            } catch (e) {
+                alert('❌ فشل الحذف: ' + e.message);
+            }
+        }
+
+        // إغلاق النافذة عند الضغط خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
             }
         }
     </script>
