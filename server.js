@@ -17,14 +17,25 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
 // ✅ اتصال PostgreSQL
+// نتحقق من وجود رابط القاعدة
+if (!process.env.DATABASE_URL) {
+  console.error('❌ ERROR: DATABASE_URL is missing! Check Railway Variables.');
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { 
+    rejectUnauthorized: false 
+  } : false
 });
 
 // 🔧 إنشاء الجداول عند البدء
 async function initDB() {
   try {
+    console.log('🔍 محاولة الاتصال بقاعدة البيانات...');
+    await pool.query('SELECT NOW()'); // اختبار بسيط للاتصال
+    console.log('✅ اتصال قاعدة البيانات ناجح!');
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -57,32 +68,37 @@ async function initDB() {
       )
     `);
 
-    console.log('✅ قاعدة البيانات جاهزة - الجداول تم إنشاؤها');
+    console.log('✅ الجداول جاهزة');
     
   } catch (err) {
-    console.error('❌ خطأ في تهيئة قاعدة البيانات:', err);
+    console.error('❌ خطأ في تهيئة قاعدة البيانات:', err.message);
+    console.error('تأكد من أن DATABASE_URL موجود وصحيح في إعدادات Railway');
   }
 }
 
 // 👤 إنشاء مدير افتراضي
 async function createDefaultAdmin() {
   try {
+    // ننتظر قليلاً لضمان اكتمال initDB
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     const { rows } = await pool.query('SELECT COUNT(*) FROM users');
-    if (parseInt(rows[0].count) === 0) {
+    const count = parseInt(rows[0].count);
+    
+    console.log(`📊 عدد المستخدمين الحالي في القاعدة: ${count}`);
+    
+    if (count === 0) {
       const hash = await bcrypt.hash('admin123', 10);
       await pool.query(
         "INSERT INTO users (id, password, role, name_ar, name_en) VALUES ($1, $2, 'admin', 'المدير', 'Admin')",
         ['admin', hash]
       );
-      console.log('✅✅✅ تم إنشاء مدير افتراضي:');
+      console.log('✅✅✅ تم إنشاء مدير افتراضي بنجاح!');
       console.log('👤 المستخدم: admin');
       console.log('🔑 كلمة المرور: admin123');
-      console.log('=================================');
-    } else {
-      console.log('📊 يوجد مستخدمين في قاعدة البيانات');
     }
   } catch (err) {
-    console.error('❌ خطأ في إنشاء المدير الافتراضي:', err);
+    console.error('❌ خطأ في إنشاء المدير:', err.message);
   }
 }
 
@@ -115,6 +131,7 @@ app.post('/api/login', async (req, res) => {
       user: { id: rows[0].id, role: rows[0].role, name_ar: rows[0].name_ar, name_en: rows[0].name_en }
     });
   } catch (err) {
+    console.error('Login Error:', err);
     res.status(500).json({ error: err.message });
   }
 });
