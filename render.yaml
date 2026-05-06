@@ -14,8 +14,8 @@ services:
           name: cleaning-db
           property: connectionString
 
-  - type: pserv
-    name: cleaning-db
+databases:
+  - name: cleaning-db
     plan: free
     database: postgresql
     ipAllowList: []
