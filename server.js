@@ -23,27 +23,22 @@ if (process.env.DATABASE_URL) {
     try {
         pool = new Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false } // مهم جداً لـ Railway
+            ssl: { rejectUnauthorized: false }
         });
-        console.log('✅ تم العثور على DATABASE_URL ومحاولة الاتصال...');
+        console.log('✅ تم الاتصال بقاعدة البيانات بنجاح');
     } catch (error) {
-        console.error('❌ خطأ في تهيئة الاتصال:', error.message);
+        console.error('❌ خطأ في الاتصال:', error.message);
     }
 } else {
-    console.warn('⚠️ تحذير: متغير DATABASE_URL غير موجود!');
+    console.warn('⚠️ تحذير: DATABASE_URL غير موجود');
 }
 
-// 🛠️ تهيئة قاعدة البيانات (إنشاء الجداول والمدير)
+// 🛠️ تهيئة قاعدة البيانات
 async function initDB() {
-    if (!pool) {
-        console.error('❌ لا يمكن إنشاء الجداول لأن قاعدة البيانات غير متصلة.');
-        return;
-    }
+    if (!pool) return;
 
     try {
-        console.log('📦 التحقق من الجداول...');
-        
-        // جدول المستخدمين
+        // جدول المستخدمين (بدون قيود على الرتبة)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
@@ -80,31 +75,25 @@ async function initDB() {
             )
         `);
 
-        console.log('✅ الجداول جاهزة.');
+        console.log('✅ الجداول جاهزة');
 
-        // ✅ إنشاء مدير افتراضي إذا كانت القاعدة فارغة
+        // إنشاء مدير افتراضي
         const result = await pool.query('SELECT COUNT(*) FROM users');
-        const userCount = parseInt(result.rows[0].count);
-
-        if (userCount === 0) {
-            console.log(' إنشاء المدير الافتراضي...');
+        if (parseInt(result.rows[0].count) === 0) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
             await pool.query(
                 `INSERT INTO users (id, password, role, name_ar, name_en) 
                  VALUES ($1, $2, $3, $4, $5)`,
-                ['admin', hashedPassword, 'admin', 'المدير', 'Admin']
+                ['admin', hashedPassword, 'مدير', 'المدير', 'Admin']
             );
-            console.log('✅✅✅ تم إنشاء المدير بنجاح:');
-            console.log(' المستخدم: admin');
-            console.log(' كلمة المرور: admin123');
+            console.log('👑 تم إنشاء المدير: admin / admin123');
         }
 
     } catch (error) {
-        console.error('❌ خطأ أثناء تهيئة قاعدة البيانات:', error.message);
+        console.error('❌ خطأ في التهيئة:', error.message);
     }
 }
 
-// تشغيل التهيئة
 initDB();
 
 // 🔐 Middleware للمصادقة
@@ -119,7 +108,7 @@ const authenticate = (req, res, next) => {
     }
 };
 
-//  مسارات API
+// 📡 مسارات API
 
 // تسجيل الدخول
 app.post('/api/login', async (req, res) => {
@@ -170,25 +159,34 @@ app.delete('/api/zones/:id', authenticate, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// جلب الموظفين
+// جلب الموظفين (مع الرتب)
 app.get('/api/employees', authenticate, async (_, res) => {
     if (!pool) return res.status(500).json({ error: 'DB Error' });
     try {
-        const { rows } = await pool.query("SELECT id, role, name_ar, name_en FROM users WHERE role = 'emp'");
+        const { rows } = await pool.query("SELECT id, role, name_ar, name_en, created_at FROM users WHERE id != 'admin'");
         res.json(rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// إضافة موظف
+// إضافة موظف (مع الرتبة المخصصة)
 app.post('/api/employees', authenticate, async (req, res) => {
     if (!pool) return res.status(500).json({ error: 'DB Error' });
-    const { id, name_ar, name_en, password } = req.body;
+    const { id, name_ar, name_en, password, role } = req.body;
     try {
         const hash = await bcrypt.hash(password, 10);
         await pool.query(
-            "INSERT INTO users (id, password, role, name_ar, name_en) VALUES ($1, $2, 'emp', $3, $4)",
-            [id, hash, name_ar, name_en]
+            "INSERT INTO users (id, password, role, name_ar, name_en) VALUES ($1, $2, $3, $4, $5)",
+            [id, hash, role, name_ar, name_en]
         );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// حذف موظف
+app.delete('/api/employees/:id', authenticate, async (req, res) => {
+    if (!pool) return res.status(500).json({ error: 'DB Error' });
+    try {
+        await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -198,7 +196,8 @@ app.get('/api/logs', authenticate, async (_, res) => {
     if (!pool) return res.status(500).json({ error: 'DB Error' });
     try {
         const { rows } = await pool.query(`
-            SELECT l.*, z.name_ar, z.name_en, u.name_ar as emp_name_ar, u.name_en as emp_name_en 
+            SELECT l.*, z.name_ar as zone_name_ar, z.name_en as zone_name_en, 
+                   u.name_ar as emp_name_ar, u.name_en as emp_name_en, u.role as emp_role
             FROM logs l 
             JOIN zones z ON l.zone_id = z.id 
             JOIN users u ON l.emp_id = u.id 
@@ -239,5 +238,5 @@ app.get('*', (req, res) => {
 
 // بدء الخادم
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(` Server running on port ${PORT}`);
+    console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
 });
