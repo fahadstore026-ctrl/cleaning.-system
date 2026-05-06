@@ -12,11 +12,11 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-in-production';
 
 // إعدادات عامة
-app.use(cors({ origin: '*', credentials: true })); // للسماح بأي مصدر (يمكن تقييده لاحقاً)
+app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname)); // ✅ تعديل: الملفات في الجذر مباشرة
 
-// ✅ اتصال PostgreSQL (يعمل محلياً وسحابياً)
+// ✅ اتصال PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
@@ -227,9 +227,9 @@ app.delete('/api/logs/:id', authenticate, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// خدمة الواجهة الأمامية
+// ✅ خدمة الواجهة الأمامية (تعديل: index.html في الجذر)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // بدء الخادم
