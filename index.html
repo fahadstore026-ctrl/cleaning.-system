@@ -251,7 +251,6 @@
   <div id="pdfExport" style="position:absolute; left:-9999px;"></div>
 
   <script>
-    // 🔧 اكتشاف رابط API تلقائياً
     const getAPIBase = () => {
       const host = window.location.hostname;
       if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:3000/api';
@@ -260,7 +259,9 @@
     const API = getAPIBase();
 
     let token = localStorage.getItem('token');
-    let user = JSON.parse(localStorage.getItem('user') || 'null');
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
+    
     let lang = localStorage.getItem('lang') || 'ar';
     let logsData = [];
     let charts = {};
@@ -331,7 +332,7 @@
         document.getElementById('zoneSelect').innerHTML = `<option value="">-- اختر --</option>` + zones.map(z=>`<option value="${z.id}">${lang==='ar'?z.name_ar:z.name_en}</option>`).join('');
         document.getElementById('filterZone').innerHTML = `<option value="">${lang==='ar'?'كل المناطق':'All Zones'}</option>` + zones.map(z=>`<option value="${z.id}">${lang==='ar'?z.name_ar:z.name_en}</option>`).join('');
         renderZonesList(zones);
-      } catch(e) { showToast(e.message); }
+      } catch(e) { console.error('Zones Error:', e); showToast(e.message); }
     }
 
     async function loadLogs() {
@@ -356,7 +357,7 @@
         document.getElementById('statImp').textContent = logsData.filter(l=>l.status==='يحتاج تحسين').length;
         document.getElementById('statUnacc').textContent = logsData.filter(l=>l.status==='غير مقبول').length;
         updateCharts();
-      } catch(e) { showToast(e.message); }
+      } catch(e) { console.error('Logs Error:', e); showToast(e.message); }
     }
 
     function renderZonesList(zones) {
@@ -367,7 +368,7 @@
       try {
         const emps = await apiCall(`${API}/employees`);
         document.getElementById('empsList').innerHTML = emps.map(e=>`<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--border);"><span>${lang==='ar'?e.name_ar:e.name_en} (${e.id})</span><div><button class="btn-sm btn-edit" onclick="openEditEmp('${e.id}')">${t('edit')}</button><button class="btn-sm btn-danger" onclick="delEmp('${e.id}')">${t('del')}</button></div></div>`).join('');
-      } catch(e) { showToast(e.message); }
+      } catch(e) { console.error('Emps Error:', e); showToast(e.message); }
     }
 
     function updateUI() {
@@ -377,32 +378,57 @@
       });
     }
 
-    // 🔐 تسجيل الدخول
-    document.getElementById('loginForm').onsubmit = async e => {
-      e.preventDefault();
+    // 🔐 تسجيل الدخول (مصحح ومضبوط)
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault(); // منع إعادة التحميل نهائياً
       const btn = document.getElementById('btnLogin');
       btn.classList.add('loading');
       try {
-        const res = await apiCall(`${API}/login`, 'POST', { username: document.getElementById('username').value.trim(), password: document.getElementById('password').value });
-        token = res.token; user = res.user;
-        localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(user));
+        console.log('جاري تسجيل الدخول...');
+        const res = await apiCall(`${API}/login`, 'POST', { 
+          username: document.getElementById('username').value.trim(), 
+          password: document.getElementById('password').value 
+        });
+        
+        console.log('نجاح الدخول:', res);
+        token = res.token; 
+        user = res.user;
+        
+        localStorage.setItem('token', token); 
+        localStorage.setItem('user', JSON.stringify(user));
+        
         btn.classList.remove('loading');
-        showView(user.role==='admin'?'adminView':'empView');
-      } catch(e) { showToast(e.message); btn.classList.remove('loading'); }
-    };
+        console.log('تم الحفظ، جاري التوجيه...');
+        showView(user.role === 'admin' ? 'adminView' : 'empView');
+      } catch(e) { 
+        console.error('فشل الدخول:', e);
+        showToast(e.message); 
+        btn.classList.remove('loading'); 
+      }
+      return false; // تأكيد إضافي لمنع إعادة التحميل
+    });
 
     function showView(id) {
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      if(id==='empView') {
+      console.log('عرض الصفحة:', id);
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      const target = document.getElementById(id);
+      if(target) target.classList.add('active');
+      
+      if(id === 'empView' && user) {
         document.getElementById('dispEmpId').textContent = user.id;
-        document.getElementById('dispEmpName').textContent = lang==='ar'?user.name_ar:user.name_en;
+        document.getElementById('dispEmpName').textContent = lang==='ar' ? user.name_ar : user.name_en;
       }
     }
-    window.logout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); token=null; user=null; location.reload(); };
+
+    window.logout = () => { 
+      localStorage.removeItem('token'); 
+      localStorage.removeItem('user'); 
+      token=null; user=null; 
+      location.reload(); 
+    };
 
     // 📝 نموذج الموظف
-    document.getElementById('cleanForm').onsubmit = async e => {
+    document.getElementById('cleanForm').addEventListener('submit', async e => {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
       const status = document.querySelector('input[name="status"]:checked')?.value;
@@ -423,7 +449,7 @@
         document.getElementById('extraFields').classList.add('hidden');
         loadLogs();
       } catch(e) { showToast(e.message); btn.classList.remove('loading'); }
-    };
+    });
 
     // 📊 إدارة التبويبات والفلاتر
     window.switchTab = tab => {
@@ -519,7 +545,7 @@
       
       charts.zone?.destroy();
       charts.zone = new Chart(document.getElementById('zoneChart'), {
-        type:'bar', data:{ labels:zLabels, datasets:[{ label:t('pTotal'), sorted.map(s=>s[1]), backgroundColor:'#2563eb', borderRadius:6 }] },
+        type:'bar', data:{ labels:zLabels, datasets:[{ label:t('pTotal'), data:sorted.map(s=>s[1]), backgroundColor:'#2563eb', borderRadius:6 }] },
         options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true, ticks:{stepSize:1}} } }
       });
 
@@ -576,8 +602,18 @@
       navigator.serviceWorker.register('/sw.js').catch(()=>{});
     }
 
-    // تهيئة
-    window.onload = () => { applyLang(); if(token && user) showView(user.role==='admin'?'adminView':'empView'); else showView('loginView'); };
+    // تهيئة محسنة
+    window.addEventListener('DOMContentLoaded', () => {
+      applyLang();
+      console.log('بدء التشغيل، التحقق من الجلسة...');
+      if(token && user && user.role) {
+        console.log('جلسة موجودة، توجيه مباشر...');
+        showView(user.role==='admin' ? 'adminView' : 'empView');
+      } else {
+        console.log('لا توجد جلسة، عرض صفحة الدخول');
+        showView('loginView');
+      }
+    });
   </script>
 </body>
 </html>
