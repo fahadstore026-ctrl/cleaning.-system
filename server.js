@@ -16,24 +16,30 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
-// ✅ اتصال PostgreSQL
-// نتحقق من وجود رابط القاعدة
-if (!process.env.DATABASE_URL) {
-  console.error('❌ ERROR: DATABASE_URL is missing! Check Railway Variables.');
-}
+// ✅ اتصال PostgreSQL - نسخة صارمة تمنع الاتصال بـ localhost
+const pool = (() => {
+  const dbUrl = process.env.DATABASE_URL;
+  
+  if (!dbUrl || dbUrl.trim() === '') {
+    console.error('🚨 خطأ حرج: متغير DATABASE_URL غير موجود أو فارغ!');
+    console.error('💡 تأكد من ربط cleaning-db بالتطبيق في Railway Variables.');
+    console.error('🔗 اضغط على cleaning-system → Variables → Add Variable → اختر cleaning-db');
+    process.exit(1); // يوقف التشغيل فوراً لتظهر الرسالة في Logs بوضوح
+  }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { 
-    rejectUnauthorized: false 
-  } : false
-});
+  console.log('✅ تم العثور على DATABASE_URL بنجاح');
+  console.log('🔍 جاري الاتصال بقاعدة البيانات...');
+  
+  return new Pool({
+    connectionString: dbUrl,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
+})();
 
 // 🔧 إنشاء الجداول عند البدء
 async function initDB() {
   try {
-    console.log('🔍 محاولة الاتصال بقاعدة البيانات...');
-    await pool.query('SELECT NOW()'); // اختبار بسيط للاتصال
+    await pool.query('SELECT NOW()'); // اختبار الاتصال
     console.log('✅ اتصال قاعدة البيانات ناجح!');
 
     await pool.query(`
@@ -46,6 +52,8 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('📦 جدول users جاهز');
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS zones (
         id TEXT PRIMARY KEY,
@@ -54,6 +62,8 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('📦 جدول zones جاهز');
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS logs (
         id TEXT PRIMARY KEY,
@@ -67,12 +77,13 @@ async function initDB() {
         edited BOOLEAN DEFAULT FALSE
       )
     `);
-
-    console.log('✅ الجداول جاهزة');
+    console.log('📦 جدول logs جاهز');
+    
+    console.log('✅ جميع الجداول تم إنشاؤها بنجاح');
     
   } catch (err) {
     console.error('❌ خطأ في تهيئة قاعدة البيانات:', err.message);
-    console.error('تأكد من أن DATABASE_URL موجود وصحيح في إعدادات Railway');
+    console.error('🔍 تأكد من أن DATABASE_URL صحيح ويمكن الوصول للقاعدة');
   }
 }
 
@@ -80,7 +91,7 @@ async function initDB() {
 async function createDefaultAdmin() {
   try {
     // ننتظر قليلاً لضمان اكتمال initDB
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     const { rows } = await pool.query('SELECT COUNT(*) FROM users');
     const count = parseInt(rows[0].count);
@@ -96,6 +107,7 @@ async function createDefaultAdmin() {
       console.log('✅✅✅ تم إنشاء مدير افتراضي بنجاح!');
       console.log('👤 المستخدم: admin');
       console.log('🔑 كلمة المرور: admin123');
+      console.log('=================================');
     }
   } catch (err) {
     console.error('❌ خطأ في إنشاء المدير:', err.message);
@@ -121,17 +133,25 @@ const authenticate = (req, res, next) => {
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   try {
+    console.log(`🔐 محاولة تسجيل دخول للمستخدم: ${username}`);
     const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [username.toLowerCase()]);
-    if (!rows[0]) return res.status(401).json({ error: 'بيانات غير صحيحة' });
+    if (!rows[0]) {
+      console.log('❌ المستخدم غير موجود');
+      return res.status(401).json({ error: 'بيانات غير صحيحة' });
+    }
     const valid = await bcrypt.compare(password, rows[0].password);
-    if (!valid) return res.status(401).json({ error: 'بيانات غير صحيحة' });
+    if (!valid) {
+      console.log('❌ كلمة المرور غير صحيحة');
+      return res.status(401).json({ error: 'بيانات غير صحيحة' });
+    }
     const token = jwt.sign({ id: rows[0].id, role: rows[0].role }, JWT_SECRET, { expiresIn: '24h' });
+    console.log(`✅ نجاح تسجيل دخول: ${username} (${rows[0].role})`);
     res.json({
       token,
       user: { id: rows[0].id, role: rows[0].role, name_ar: rows[0].name_ar, name_en: rows[0].name_en }
     });
   } catch (err) {
-    console.error('Login Error:', err);
+    console.error('❌ خطأ في تسجيل الدخول:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
