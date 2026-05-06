@@ -1,11 +1,11 @@
 {
-  "name": "cleaning-tracking-system",
-  "version": "2.0.0",
-  "description": "نظام تتبع النظافة - إصدار سحابي",
+  "name": "cleaning-system",
+  "version": "1.0.0",
+  "description": "نظام تتبع النظافة",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "build": "npm install"
   },
   "dependencies": {
     "express": "^4.18.2",
