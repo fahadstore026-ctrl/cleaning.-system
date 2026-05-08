@@ -470,11 +470,11 @@
                                 <input type="checkbox" id="perm-view-logs">
                                 <span>👁️ عرض السجلات</span>
                             </label>
-                            <label class="checkbox-item" class="admin-only">
+                            <label class="checkbox-item">
                                 <input type="checkbox" id="perm-manage-employees">
                                 <span>👥 إدارة الموظفين</span>
                             </label>
-                            <label class="checkbox-item" class="admin-only">
+                            <label class="checkbox-item">
                                 <input type="checkbox" id="perm-manage-zones">
                                 <span>📍 إدارة المناطق</span>
                             </label>
@@ -536,12 +536,23 @@
         const API = '/api';
         let token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || 'null');
+        
+        // Fix: Ensure permissions exist
+        if (user && !user.permissions) {
+            user.permissions = {
+                can_add_logs: false,
+                can_view_logs: false,
+                can_manage_employees: false,
+                can_manage_zones: false
+            };
+        }
+        
         let allZones = [];
 
         if (token && user) {
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('adminView').classList.remove('hidden');
-            document.getElementById('userName').textContent = user.name_ar || user.name_en;
+            document.getElementById('userName').textContent = user.name_ar || user.name_en || user.id;
             setupPermissions();
             loadData();
         }
@@ -576,6 +587,17 @@
                 });
                 token = res.token;
                 user = res.user;
+                
+                // Ensure permissions exist
+                if (!user.permissions) {
+                    user.permissions = {
+                        can_add_logs: false,
+                        can_view_logs: false,
+                        can_manage_employees: false,
+                        can_manage_zones: false
+                    };
+                }
+                
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
                 location.reload();
@@ -590,23 +612,28 @@
         }
 
         function setupPermissions() {
-            const perms = user.permissions || {};
+            const perms = user.permissions || {
+                can_add_logs: false,
+                can_view_logs: false,
+                can_manage_employees: false,
+                can_manage_zones: false
+            };
             
             // Hide admin tabs if not authorized
             if (!perms.can_manage_employees) {
-                document.getElementById('tab-employees-btn').classList.add('hidden');
+                const empBtn = document.getElementById('tab-employees-btn');
+                if (empBtn) empBtn.classList.add('hidden');
             }
             if (!perms.can_manage_zones) {
-                document.getElementById('tab-zones-btn').classList.add('hidden');
+                const zoneBtn = document.getElementById('tab-zones-btn');
+                if (zoneBtn) zoneBtn.classList.add('hidden');
             }
 
             // Set default permissions based on role
             if (user.role === 'عامل نظافة') {
                 document.getElementById('perm-add-logs').checked = true;
                 document.getElementById('perm-view-logs').checked = true;
-                document.getElementById('perm-manage-employees').checked = false;
-                document.getElementById('perm-manage-zones').checked = false;
-            } else if (user.role === 'مدير') {
+            } else if (user.role === 'مدير' || user.role === 'admin') {
                 document.getElementById('perm-add-logs').checked = true;
                 document.getElementById('perm-view-logs').checked = true;
                 document.getElementById('perm-manage-employees').checked = true;
@@ -638,8 +665,6 @@
             } else if (role === 'مشرف') {
                 addLogs.checked = true;
                 viewLogs.checked = true;
-                manageEmp.checked = false;
-                manageZones.checked = false;
             }
         }
 
@@ -660,11 +685,11 @@
                 }
                 await loadLogs();
             } catch (e) {
-                console.error('Error loading data:', e);
+                console.error('Error loading ', e);
             }
         }
 
-        // Logs
+        // Logs - All users can access based on permissions
         async function loadLogs() {
             try {
                 const logs = await apiCall(`${API}/logs`);
@@ -672,7 +697,9 @@
                 
                 let html = '<div class="table-container"><table><thead><tr>';
                 html += '<th>التاريخ</th><th>الوقت</th><th>المنطقة</th><th>الموظف</th><th>الحالة</th><th>ملاحظات</th>';
-                if (user.permissions?.can_manage_employees) html += '<th>حذف</th>';
+                if (user.permissions?.can_manage_employees || user.permissions?.can_manage_zones) {
+                    html += '<th>حذف</th>';
+                }
                 html += '</tr></thead><tbody>';
                 
                 if (logs.length === 0) {
@@ -686,8 +713,9 @@
                             <td>${l.zone_name_ar || l.zone_name_en}</td>
                             <td>${l.emp_name_ar || l.emp_name_en}</td>
                             <td><span class="badge ${statusClass}">${l.status}</span></td>
-                            <td>${l.notes}</td>
-                            ${user.permissions?.can_manage_employees ? `<td><button class="btn-danger btn-sm" onclick="deleteLog('${l.id}')">🗑️</button></td>` : ''}
+                            <td>${l.notes || '-'}</td>
+                            ${(user.permissions?.can_manage_employees || user.permissions?.can_manage_zones) ? 
+                                `<td><button class="btn-danger btn-sm" onclick="deleteLog('${l.id}')">🗑️</button></td>` : ''}
                         </tr>`;
                     });
                 }
@@ -817,7 +845,20 @@
                 const emp = emps.find(e => e.id === id);
                 if (!emp) return;
 
-                const perms = typeof emp.permissions === 'string' ? JSON.parse(emp.permissions) : emp.permissions;
+                const perms = emp.permissions;
+                
+                // Handle permissions - could be string or object
+                let permObj;
+                if (typeof perms === 'string') {
+                    permObj = JSON.parse(perms);
+                } else {
+                    permObj = perms || {
+                        can_add_logs: false,
+                        can_view_logs: false,
+                        can_manage_employees: false,
+                        can_manage_zones: false
+                    };
+                }
 
                 document.getElementById('editEmpOldId').value = emp.id;
                 document.getElementById('editEmpId').value = emp.id;
@@ -825,6 +866,12 @@
                 document.getElementById('editEmpNameEn').value = emp.name_en;
                 document.getElementById('editEmpPass').value = '';
                 document.getElementById('editEmpRole').value = emp.role;
+                
+                // Set permission checkboxes
+                document.getElementById('perm-add-logs').checked = permObj.can_add_logs || false;
+                document.getElementById('perm-view-logs').checked = permObj.can_view_logs || false;
+                document.getElementById('perm-manage-employees').checked = permObj.can_manage_employees || false;
+                document.getElementById('perm-manage-zones').checked = permObj.can_manage_zones || false;
                 
                 document.getElementById('editModal').classList.remove('hidden');
             } catch (e) {
