@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام النظافة المتقدم</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,57 +22,193 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-        body { background: var(--bg); min-height: 100vh; padding: 20px; color: var(--text); }
         
-        .logo {
-            display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
-            padding: 20px; background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            border-radius: var(--radius); color: white;
+        body { 
+            background: var(--bg); 
+            min-height: 100vh; 
+            padding: 15px; 
+            color: var(--text);
         }
-        .logo-icon { width: 60px; height: 60px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
-        .logo-text { font-size: 28px; font-weight: 800; }
+
+        .logo {
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 20px;
+            padding: 20px; 
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: var(--radius); 
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .logo-icon { 
+            width: 60px; 
+            height: 60px; 
+            background: white; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 36px; 
+        }
+        
+        .logo-text { 
+            font-size: 28px; 
+            font-weight: 800; 
+        }
 
         button {
-            padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
-            font-size: 14px; font-weight: 600; transition: all 0.3s;
-            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 14px; 
+            font-weight: 600; 
+            transition: all 0.3s;
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            margin: 5px;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+        
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
+        .btn-info { background: #06b6d4; color: white; }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
         .btn-lg { padding: 14px 28px; font-size: 16px; }
 
-        .card { background: var(--card); padding: 30px; border-radius: var(--radius); box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid var(--border); }
-        .header h2 { color: var(--primary-dark); font-size: 28px; font-weight: 800; }
+        .card { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: var(--radius); 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            margin-bottom: 20px; 
+        }
+        
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            padding-bottom: 15px; 
+            border-bottom: 3px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .header h2 { 
+            color: var(--primary-dark); 
+            font-size: 24px; 
+            font-weight: 800; 
+        }
 
         input, select {
-            padding: 12px 16px; border: 2px solid var(--border); border-radius: 8px;
-            width: 100%; margin: 6px 0 16px; font-size: 14px;
+            padding: 12px 16px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px;
+            width: 100%; 
+            margin: 6px 0 16px; 
+            font-size: 14px;
         }
-        input:focus, select:focus { outline: none; border-color: var(--primary); }
-
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
         
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-btn { padding: 12px 24px; background: white; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        input:focus, select:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+        }
+
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 15px; 
+        }
+        
+        .tabs { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+        }
+        
+        .tab-btn { 
+            padding: 10px 20px; 
+            background: white; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .tab-btn.active { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary); 
+        }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
-        .table-container { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        th { padding: 16px; text-align: right; font-weight: 700; }
-        td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-        tbody tr:hover { background: #f8fafc; }
+        .table-container { 
+            background: white; 
+            border-radius: var(--radius); 
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            margin-top: 15px; 
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            min-width: 600px;
+        }
+        
+        thead { 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
+            color: white; 
+        }
+        
+        th { 
+            padding: 14px 12px; 
+            text-align: right; 
+            font-weight: 700; 
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        td { 
+            padding: 12px; 
+            border-bottom: 1px solid var(--border); 
+            font-size: 13px;
+        }
+        
+        tbody tr:hover { 
+            background: #f8fafc; 
+        }
 
-        .badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: white; display: inline-block; }
+        .badge { 
+            padding: 5px 12px; 
+            border-radius: 15px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: white; 
+            display: inline-block; 
+        }
+        
         .role-مدير { background: #8b5cf6; }
         .role-استقبال { background: #06b6d4; }
         .role-عامل-نظافة { background: var(--success); }
@@ -78,17 +216,131 @@
         .status-يحتاج-تحسين { background: var(--warning); }
         .status-غير-مقبول { background: var(--danger); }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 25px; border-radius: var(--radius); text-align: center; }
-        .stat-card h3 { font-size: 36px; margin-bottom: 8px; }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        
+        .stat-card { 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
+            color: white; 
+            padding: 20px; 
+            border-radius: var(--radius); 
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 { 
+            font-size: 32px; 
+            margin-bottom: 5px; 
+            font-weight: 800; 
+        }
+        
+        .stat-card p { 
+            font-size: 13px; 
+            opacity: 0.95; 
+        }
 
-        #loginView { max-width: 450px; margin: 80px auto; text-align: center; }
-        #loginView h2 { color: var(--primary-dark); font-size: 32px; margin: 25px 0 30px; }
+        #loginView { 
+            max-width: 450px; 
+            margin: 40px auto; 
+            text-align: center; 
+        }
+        
+        #loginView h2 { 
+            color: var(--primary-dark); 
+            font-size: 28px; 
+            margin: 20px 0 25px; 
+        }
+        
         .hidden { display: none !important; }
 
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .header { flex-direction: column; gap: 15px; text-align: center; }
+            body { padding: 10px; }
+            
+            .logo { 
+                flex-direction: column; 
+                text-align: center;
+                padding: 15px;
+            }
+            
+            .logo-icon { width: 50px; height: 50px; font-size: 28px; }
+            .logo-text { font-size: 22px; }
+            
+            .header { 
+                flex-direction: column; 
+                text-align: center; 
+                gap: 10px;
+            }
+            
+            .header h2 { font-size: 20px; }
+            
+            .form-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .tabs { 
+                flex-direction: column;
+            }
+            
+            .tab-btn { 
+                width: 100%;
+                min-width: unset;
+            }
+            
+            table { 
+                font-size: 11px;
+                min-width: 400px;
+            }
+            
+            th, td { 
+                padding: 8px;
+            }
+            
+            button { 
+                padding: 8px 16px; 
+                font-size: 13px;
+                margin: 3px;
+            }
+            
+            .btn-lg { 
+                padding: 12px 20px; 
+                font-size: 14px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+            
+            .export-buttons button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-text { font-size: 18px; }
+            .header h2 { font-size: 18px; }
+            input, select { padding: 10px 12px; font-size: 13px; }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -96,7 +348,7 @@
     <div class="container">
         <!-- Login -->
         <div id="loginView" class="card">
-            <div style="font-size: 80px; margin-bottom: 20px;">✨</div>
+            <div style="font-size: 60px; margin-bottom: 15px;">✨</div>
             <h2>نظام النظافة المتقدم</h2>
             <input type="text" id="username" placeholder="اسم المستخدم (admin)">
             <input type="password" id="password" placeholder="كلمة المرور (admin123)">
@@ -130,7 +382,7 @@
             <!-- Logs -->
             <div id="tab-logs" class="tab-content active">
                 <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-dark);">➕ إضافة سجل جديد</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--primary-dark); font-size: 20px;">➕ إضافة سجل جديد</h3>
                     <div class="form-grid">
                         <select id="logZone"><option value="">اختر المنطقة...</option></select>
                         <input type="date" id="logDate">
@@ -143,15 +395,21 @@
                         </select>
                         <input type="text" id="logNotes" placeholder="ملاحظات">
                     </div>
-                    <button class="btn-success btn-lg" onclick="addLog()" style="width: 100%;">✅ حفظ</button>
+                    <button class="btn-success btn-lg" onclick="addLog()" style="width: 100%;">✅ حفظ السجل</button>
                 </div>
+
+                <div class="export-buttons">
+                    <button class="btn-danger" onclick="exportToPDF()">📄 تصدير PDF</button>
+                    <button class="btn-success" onclick="exportToExcel()">📊 تصدير Excel</button>
+                </div>
+
                 <div id="logsList"></div>
             </div>
 
             <!-- Employees -->
             <div id="tab-employees" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-dark);">➕ إضافة موظف</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--primary-dark); font-size: 20px;">➕ إضافة موظف</h3>
                     <div class="form-grid">
                         <input type="text" id="empId" placeholder="الرقم الوظيفي">
                         <input type="text" id="empNameAr" placeholder="الاسم بالعربي">
@@ -163,7 +421,7 @@
                             <option value="عامل نظافة">🧹 عامل نظافة</option>
                         </select>
                     </div>
-                    <button class="btn-success btn-lg" onclick="addEmployee()" style="width: 100%;">✅ حفظ</button>
+                    <button class="btn-success btn-lg" onclick="addEmployee()" style="width: 100%;">✅ حفظ الموظف</button>
                 </div>
                 <div id="empList"></div>
             </div>
@@ -171,13 +429,13 @@
             <!-- Zones -->
             <div id="tab-zones" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-dark);">📍 إضافة منطقة</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--primary-dark); font-size: 20px;">📍 إضافة منطقة جديدة</h3>
                     <div class="form-grid">
-                        <input type="text" id="zoneId" placeholder="معرف المنطقة">
+                        <input type="text" id="zoneId" placeholder="معرف المنطقة (Z01)">
                         <input type="text" id="zoneNameAr" placeholder="الاسم بالعربي">
                         <input type="text" id="zoneNameEn" placeholder="الاسم بالإنجليزي">
                     </div>
-                    <button class="btn-success btn-lg" onclick="addZone()" style="width: 100%;">✅ إضافة</button>
+                    <button class="btn-success btn-lg" onclick="addZone()" style="width: 100%;">✅ إضافة المنطقة</button>
                 </div>
                 <div id="zoneList"></div>
             </div>
@@ -188,8 +446,8 @@
         const API = '/api';
         let token = null;
         let user = null;
+        let allLogs = [];
 
-        // Clear old data and start fresh
         localStorage.clear();
 
         async function apiCall(url, method = 'GET', body = null) {
@@ -282,7 +540,7 @@
 
             try {
                 await apiCall(`${API}/employees`, 'POST', { id, name_ar, name_en, password, role });
-                alert('✅ تم الإضافة');
+                alert('✅ تم إضافة الموظف');
                 document.getElementById('empId').value = '';
                 document.getElementById('empNameAr').value = '';
                 document.getElementById('empNameEn').value = '';
@@ -294,10 +552,10 @@
         }
 
         async function deleteEmployee(id) {
-            if (!confirm('حذف؟')) return;
+            if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
             try {
                 await apiCall(`${API}/employees/${id}`, 'DELETE');
-                alert('✅ تم الحذف');
+                alert('✅ تم حذف الموظف');
                 await loadEmployees();
             } catch (e) {
                 alert('❌ ' + e.message);
@@ -312,19 +570,20 @@
                 const select = document.getElementById('logZone');
                 select.innerHTML = '<option value="">اختر المنطقة...</option>';
                 zones.forEach(z => {
-                    select.innerHTML += `<option value="${z.id}">${z.name_ar}</option>`;
+                    select.innerHTML += `<option value="${z.id}">${z.name_ar} (${z.name_en})</option>`;
                 });
                 
-                let html = '<div class="table-container"><table><thead><tr><th>المعرف</th><th>الاسم</th><th>حذف</th></tr></thead><tbody>';
+                let html = '<div class="table-container"><table><thead><tr><th>المعرف</th><th>الاسم (عربي)</th><th>الاسم (إنجليزي)</th><th>حذف</th></tr></thead><tbody>';
                 
                 if (zones.length === 0) {
-                    html += '<tr><td colspan="3" style="text-align: center; padding: 30px;">لا توجد مناطق</td></tr>';
+                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px;">لا توجد مناطق</td></tr>';
                 } else {
                     zones.forEach(z => {
                         html += `<tr>
                             <td><strong>${z.id}</strong></td>
-                            <td>${z.name_ar} (${z.name_en})</td>
-                            <td><button class="btn-danger btn-sm" onclick="deleteZone('${z.id}')">🗑️</button></td>
+                            <td>${z.name_ar}</td>
+                            <td>${z.name_en}</td>
+                            <td><button class="btn-danger btn-sm" onclick="deleteZone('${z.id}')">🗑️ حذف</button></td>
                         </tr>`;
                     });
                 }
@@ -346,7 +605,7 @@
 
             try {
                 await apiCall(`${API}/zones`, 'POST', { id, name_ar, name_en });
-                alert('✅ تم الإضافة');
+                alert('✅ تم إضافة المنطقة');
                 document.getElementById('zoneId').value = '';
                 document.getElementById('zoneNameAr').value = '';
                 document.getElementById('zoneNameEn').value = '';
@@ -357,10 +616,10 @@
         }
 
         async function deleteZone(id) {
-            if (!confirm('حذف؟')) return;
+            if (!confirm('هل أنت متأكد من حذف هذه المنطقة؟')) return;
             try {
                 await apiCall(`${API}/zones/${id}`, 'DELETE');
-                alert('✅ تم الحذف');
+                alert('✅ تم حذف المنطقة');
                 await loadZones();
             } catch (e) {
                 alert('❌ ' + e.message);
@@ -369,15 +628,15 @@
 
         async function loadLogs() {
             try {
-                const logs = await apiCall(`${API}/logs`);
-                document.getElementById('totalLogs').textContent = logs.length;
+                allLogs = await apiCall(`${API}/logs`);
+                document.getElementById('totalLogs').textContent = allLogs.length;
                 
                 let html = '<div class="table-container"><table><thead><tr><th>التاريخ</th><th>الوقت</th><th>المنطقة</th><th>الموظف</th><th>الحالة</th><th>ملاحظات</th><th>حذف</th></tr></thead><tbody>';
                 
-                if (logs.length === 0) {
+                if (allLogs.length === 0) {
                     html += '<tr><td colspan="7" style="text-align: center; padding: 30px;">لا توجد سجلات</td></tr>';
                 } else {
-                    logs.forEach(l => {
+                    allLogs.forEach(l => {
                         html += `<tr>
                             <td>${l.date}</td>
                             <td>${l.time}</td>
@@ -422,7 +681,7 @@
         }
 
         async function deleteLog(id) {
-            if (!confirm('حذف؟')) return;
+            if (!confirm('حذف السجل؟')) return;
             try {
                 await apiCall(`${API}/logs/${id}`, 'DELETE');
                 alert('✅ تم الحذف');
@@ -432,7 +691,90 @@
             }
         }
 
-        // Check if already logged in
+        // Export to PDF
+        async function exportToPDF() {
+            if (allLogs.length === 0) {
+                return alert('لا توجد سجلات للتصدير');
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                direction: 'rtl',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Title
+            doc.setFontSize(18);
+            doc.text('تقرير سجلات النظافة', 105, 15, { align: 'center' });
+            
+            // Date
+            doc.setFontSize(12);
+            doc.text(`تاريخ التصدير: ${new Date().toLocaleDateString('ar-SA')}`, 105, 25, { align: 'center' });
+
+            // Table headers
+            doc.setFontSize(11);
+            const headers = ['التاريخ', 'الوقت', 'المنطقة', 'الموظف', 'الحالة', 'ملاحظات'];
+            let yPos = 40;
+            
+            headers.forEach((header, index) => {
+                doc.text(header, 190 - (index * 30), yPos);
+            });
+
+            // Table rows
+            doc.setFontSize(9);
+            yPos += 10;
+            
+            allLogs.forEach((log, index) => {
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                const row = [
+                    log.date,
+                    log.time,
+                    log.zone_name_ar || log.zone_name_en,
+                    log.emp_name_ar || log.emp_name_en,
+                    log.status,
+                    log.notes || '-'
+                ];
+                
+                row.forEach((cell, cellIndex) => {
+                    doc.text(String(cell), 190 - (cellIndex * 30), yPos);
+                });
+                
+                yPos += 8;
+            });
+
+            // Save
+            doc.save(`cleaning-logs-${new Date().toISOString().split('T')[0]}.pdf`);
+            alert('✅ تم تصدير PDF بنجاح');
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            if (allLogs.length === 0) {
+                return alert('لا توجد سجلات للتصدير');
+            }
+
+            const data = allLogs.map(log => ({
+                'التاريخ': log.date,
+                'الوقت': log.time,
+                'المنطقة': log.zone_name_ar || log.zone_name_en,
+                'الموظف': log.emp_name_ar || log.emp_name_en,
+                'الحالة': log.status,
+                'ملاحظات': log.notes || '-'
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'السجلات');
+
+            XLSX.writeFile(wb, `cleaning-logs-${new Date().toISOString().split('T')[0]}.xlsx`);
+            alert('✅ تم تصدير Excel بنجاح');
+        }
+
         window.onload = function() {
             const savedToken = localStorage.getItem('token');
             const savedUser = localStorage.getItem('user');
