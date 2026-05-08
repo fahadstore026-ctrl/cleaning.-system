@@ -11,43 +11,43 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'my-super-secret-jwt-key';
 
-// إعدادات CORS و JSON
+// Middleware
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// الاتصال بقاعدة البيانات
+// Database connection
 let pool = null;
 
 if (process.env.DATABASE_URL) {
-    try {
-        pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }
-        });
-        console.log('✅ تم الاتصال بقاعدة البيانات بنجاح');
-    } catch (error) {
-        console.error('❌ خطأ في الاتصال:', error.message);
-    }
+    pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    });
+    console.log('✅ Database connected successfully');
 } else {
-    console.warn('⚠️ تحذير: DATABASE_URL غير موجود');
+    console.error('❌ DATABASE_URL is not set!');
 }
 
-// تهيئة قاعدة البيانات
+// Initialize database
 async function initDB() {
-    if (!pool) return;
+    if (!pool) {
+        console.error('Cannot initialize database - no connection');
+        return;
+    }
 
     try {
-        // إزالة القيود القديمة على جدول users
-        console.log('🔄 إزالة القيود القديمة إن وجدت...');
-        await pool.query(`
-            ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
-            ALTER TABLE users DROP CONSTRAINT IF EXISTS users_check;
-        `).catch(() => {
-            // تجاهل الخطأ إذا لم يكن القيد موجوداً
-        });
+        // Drop old constraints if they exist
+        try {
+            await pool.query('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+            await pool.query('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_check');
+            console.log('✅ Old constraints removed');
+        } catch (e) {
+            console.log('No old constraints to remove');
+        }
 
-        // إنشاء جدول المستخدمين بدون قيود على role
+        // Create users table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
@@ -58,9 +58,9 @@ async function initDB() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ جدول users جاهز');
+        console.log('✅ Users table ready');
 
-        // جدول المناطق
+        // Create zones table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS zones (
                 id TEXT PRIMARY KEY,
@@ -69,9 +69,9 @@ async function initDB() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ جدول zones جاهز');
+        console.log('✅ Zones table ready');
 
-        // جدول السجلات
+        // Create logs table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS logs (
                 id TEXT PRIMARY KEY,
@@ -85,64 +85,69 @@ async function initDB() {
                 edited BOOLEAN DEFAULT FALSE
             )
         `);
-        console.log('✅ جدول logs جاهز');
+        console.log('✅ Logs table ready');
 
-        // إنشاء مدير افتراضي
+        // Create default admin if not exists
         const result = await pool.query('SELECT COUNT(*) FROM users');
-        const userCount = parseInt(result.rows[0].count);
-
-        if (userCount === 0) {
-            console.log('👑 إنشاء المدير الافتراضي...');
+        if (parseInt(result.rows[0].count) === 0) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
             await pool.query(
                 `INSERT INTO users (id, password, role, name_ar, name_en) 
                  VALUES ($1, $2, $3, $4, $5)`,
                 ['admin', hashedPassword, 'مدير', 'المدير', 'Admin']
             );
-            console.log('✅ تم إنشاء المدير: admin / admin123');
+            console.log('✅ Default admin created: admin / admin123');
         }
 
-        console.log('✅ قاعدة البيانات جاهزة تماماً');
-
     } catch (error) {
-        console.error('❌ خطأ في تهيئة قاعدة البيانات:', error.message);
+        console.error('❌ Database initialization error:', error.message);
     }
 }
 
-// تشغيل التهيئة
+// Run initialization
 initDB();
 
-// Middleware للمصادقة
+// Authentication middleware
 const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'غير مصرح' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ error: 'Invalid token format' });
+    }
+
     try {
         req.user = jwt.verify(token, JWT_SECRET);
         next();
-    } catch {
-        res.status(403).json({ error: 'توكن غير صالح' });
+    } catch (error) {
+        return res.status(403).json({ error: 'Invalid or expired token' });
     }
 };
 
-// ==================== مسارات API ====================
+// ==================== API Routes ====================
 
-// تسجيل الدخول
+// Login
 app.post('/api/login', async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'قاعدة البيانات غير متصلة' });
-    
-    const { username, password } = req.body;
-    
     try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password required' });
+        }
+
         const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [username.toLowerCase()]);
         
         if (!rows[0]) {
-            return res.status(401).json({ error: 'بيانات غير صحيحة' });
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
         
-        const match = await bcrypt.compare(password, rows[0].password);
+        const validPassword = await bcrypt.compare(password, rows[0].password);
         
-        if (!match) {
-            return res.status(401).json({ error: 'بيانات غير صحيحة' });
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const token = jwt.sign(
@@ -160,118 +165,113 @@ app.post('/api/login', async (req, res) => {
                 name_en: rows[0].name_en 
             }
         });
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-// جلب المناطق
-app.get('/api/zones', authenticate, async (_, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
+// Get zones
+app.get('/api/zones', authenticate, async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT * FROM zones ORDER BY id');
         res.json(rows);
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// إضافة منطقة
+// Add zone
 app.post('/api/zones', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
-    const { id, name_ar, name_en } = req.body;
     try {
+        const { id, name_ar, name_en } = req.body;
         await pool.query(
-            'INSERT INTO zones (id, name_ar, name_en) VALUES ($1, $2, $3)', 
+            'INSERT INTO zones (id, name_ar, name_en) VALUES ($1, $2, $3)',
             [id, name_ar, name_en]
         );
         res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// حذف منطقة
+// Delete zone
 app.delete('/api/zones/:id', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
     try {
         await pool.query('DELETE FROM zones WHERE id = $1', [req.params.id]);
         res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// جلب الموظفين
-app.get('/api/employees', authenticate, async (_, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
+// Get employees
+app.get('/api/employees', authenticate, async (req, res) => {
     try {
         const { rows } = await pool.query(
             "SELECT id, role, name_ar, name_en, created_at FROM users WHERE id != 'admin'"
         );
         res.json(rows);
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// إضافة موظف
+// Add employee
 app.post('/api/employees', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
-    const { id, name_ar, name_en, password, role } = req.body;
-    
     try {
-        const hash = await bcrypt.hash(password, 10);
+        const { id, name_ar, name_en, password, role } = req.body;
+        
+        if (!id || !name_ar || !name_en || !password || !role) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query(
             "INSERT INTO users (id, password, role, name_ar, name_en) VALUES ($1, $2, $3, $4, $5)",
-            [id, hash, role, name_ar, name_en]
+            [id, hashedPassword, role, name_ar, name_en]
         );
         res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// تعديل موظف
+// Update employee
 app.put('/api/employees/:id', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
-    const { name_ar, name_en, role, password } = req.body;
-    
     try {
-        let sql = "UPDATE users SET name_ar=$1, name_en=$2, role=$3";
-        let params = [name_ar, name_en, role];
+        const { name_ar, name_en, role, password } = req.body;
+        let query = 'UPDATE users SET name_ar = $1, name_en = $2, role = $3';
+        let values = [name_ar, name_en, role];
         
         if (password) {
-            const hash = await bcrypt.hash(password, 10);
-            sql += ", password=$4";
-            params.push(hash);
+            const hashedPassword = await bcrypt.hash(password, 10);
+            query += ', password = $4';
+            values.push(hashedPassword);
         }
         
-        sql += " WHERE id=$" + (params.length + 1);
-        params.push(req.params.id);
+        query += ` WHERE id = $${values.length + 1}`;
+        values.push(req.params.id);
         
-        await pool.query(sql, params);
+        await pool.query(query, values);
         res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// حذف موظف
+// Delete employee
 app.delete('/api/employees/:id', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
     try {
         await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
         res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// جلب السجلات
-app.get('/api/logs', authenticate, async (_, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
+// Get logs
+app.get('/api/logs', authenticate, async (req, res) => {
     try {
         const { rows } = await pool.query(`
             SELECT l.*, 
@@ -286,49 +286,57 @@ app.get('/api/logs', authenticate, async (_, res) => {
             ORDER BY l.ts DESC
         `);
         res.json(rows);
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// إضافة سجل
+// Add log
 app.post('/api/logs', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
-    const { zone_id, status, notes, date, time } = req.body;
-    const id = `LOG-${Date.now()}`;
-    
     try {
+        const { zone_id, status, notes, date, time } = req.body;
+        const id = `LOG-${Date.now()}`;
+        
         await pool.query(
             `INSERT INTO logs (id, zone_id, emp_id, status, notes, date, time, edited) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, false)`,
             [id, zone_id, req.user.id, status, notes || '-', date, time]
         );
         res.json({ success: true, id });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// حذف سجل
+// Delete log
 app.delete('/api/logs/:id', authenticate, async (req, res) => {
-    if (!pool) return res.status(500).json({ error: 'DB Error' });
     try {
         await pool.query('DELETE FROM logs WHERE id = $1', [req.params.id]);
         res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// خدمة الواجهة الأمامية
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Serve frontend - MUST be last route
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// بدء الخادم
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
-    console.log(`🌐 الرابط: http://localhost:${PORT}`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Internal server error' });
 });
 
-
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🌐 Local: http://localhost:${PORT}`);
+    console.log(`🔗 Health: http://localhost:${PORT}/api/health`);
+});
