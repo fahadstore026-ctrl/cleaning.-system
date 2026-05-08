@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تتبع النظافة المتقدم</title>
+    <title>نظام النظافة المتقدم</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -22,12 +22,7 @@
             --radius: 12px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
 
         body {
             background: var(--bg);
@@ -36,7 +31,6 @@
             color: var(--text);
         }
 
-        /* اللوجو */
         .logo {
             display: flex;
             align-items: center;
@@ -65,7 +59,6 @@
             color: white;
         }
 
-        /* الأزرار */
         button {
             padding: 10px 20px;
             border: none;
@@ -91,11 +84,9 @@
         .btn-warning { background: var(--warning); color: white; }
         .btn-info { background: var(--info); color: white; }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background: var(--primary); color: white; }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
         .btn-lg { padding: 14px 28px; font-size: 16px; }
 
-        /* البطاقات */
         .card {
             background: var(--card);
             padding: 30px;
@@ -119,7 +110,6 @@
             font-weight: 800;
         }
 
-        /* الحقول */
         input, select, textarea {
             padding: 12px 16px;
             border: 2px solid var(--border);
@@ -143,7 +133,6 @@
             margin-bottom: 20px;
         }
 
-        /* التبويبات */
         .tabs {
             display: flex;
             gap: 10px;
@@ -175,7 +164,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* الجداول */
         .table-container {
             background: white;
             border-radius: var(--radius);
@@ -210,7 +198,6 @@
             background: #f8fafc;
         }
 
-        /* الشارات */
         .badge {
             padding: 6px 14px;
             border-radius: 20px;
@@ -232,7 +219,6 @@
         .status-يحتاج-تحسين { background: var(--warning); }
         .status-غير-مقبول { background: var(--danger); }
 
-        /* الإحصائيات */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -260,7 +246,6 @@
             opacity: 0.95;
         }
 
-        /* تسجيل الدخول */
         #loginView {
             max-width: 450px;
             margin: 80px auto;
@@ -274,10 +259,6 @@
             font-weight: 800;
         }
 
-        .login-logo {
-            margin-bottom: 20px;
-        }
-
         .login-logo .logo-icon {
             width: 100px;
             height: 100px;
@@ -289,7 +270,6 @@
 
         .hidden { display: none !important; }
 
-        /* النافذة المنبثقة */
         .modal {
             position: fixed;
             top: 0;
@@ -308,7 +288,7 @@
             padding: 30px;
             border-radius: var(--radius);
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -338,6 +318,38 @@
             transform: none;
         }
 
+        .permission-group {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .permission-group h4 {
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
             table { font-size: 12px; }
@@ -350,40 +362,41 @@
 <body>
     <div class="container">
         
-        <!-- 🔐 تسجيل الدخول -->
+        <!-- 🔐 Login -->
         <div id="loginView" class="card">
             <div class="login-logo">
                 <div class="logo-icon">✨</div>
             </div>
-            <h2>نظام تتبع النظافة المتقدم</h2>
-            <input type="text" id="username" placeholder="اسم المستخدم / الرقم الوظيفي">
+            <h2>نظام النظافة المتقدم</h2>
+            <input type="text" id="username" placeholder="اسم المستخدم">
             <input type="password" id="password" placeholder="كلمة المرور">
             <button class="btn-primary btn-lg" onclick="login()" style="width: 100%;">
-                🔑 تسجيل الدخول
+                🔑 دخول
             </button>
-            <p style="margin-top: 20px; color: var(--text-light); font-size: 14px;">
-                admin / admin123
-            </p>
         </div>
 
-        <!-- 📊 لوحة الإدارة -->
+        <!-- 📊 Dashboard -->
         <div id="adminView" class="hidden">
-            <!-- اللوجو -->
             <div class="logo">
                 <div class="logo-icon">✨</div>
-                <div class="logo-text">نظام النظافة المتقدم</div>
+                <div class="logo-text">نظام النظافة</div>
             </div>
 
             <div class="header">
                 <h2>🎯 لوحة الإدارة</h2>
-                <button class="btn-danger" onclick="logout()">🚪 خروج</button>
+                <div>
+                    <span style="margin-left: 15px; color: var(--text-light);">
+                        👤 <span id="userName"></span>
+                    </span>
+                    <button class="btn-danger" onclick="logout()">🚪 خروج</button>
+                </div>
             </div>
 
-            <!-- الإحصائيات -->
+            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3 id="totalEmployees">0</h3>
-                    <p>إجمالي الموظفين</p>
+                    <p>الموظفين</p>
                 </div>
                 <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                     <h3 id="totalZones">0</h3>
@@ -395,45 +408,92 @@
                 </div>
             </div>
 
-            <!-- التبويبات -->
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('employees')">👥 الموظفين والرتب</button>
-                <button class="tab-btn" onclick="showTab('zones')">📍 المناطق</button>
-                <button class="tab-btn" onclick="showTab('logs')">📋 السجلات</button>
+            <!-- Tabs -->
+            <div class="tabs" id="mainTabs">
+                <button class="tab-btn active" onclick="showTab('logs')">📋 السجلات</button>
+                <button class="tab-btn" onclick="showTab('employees')" id="tab-employees-btn">👥 الموظفين</button>
+                <button class="tab-btn" onclick="showTab('zones')" id="tab-zones-btn">📍 المناطق</button>
             </div>
 
-            <!-- 👥 قسم الموظفين -->
-            <div id="tab-employees" class="tab-content active">
+            <!-- 📋 Logs Section -->
+            <div id="tab-logs" class="tab-content active">
                 <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">➕ إضافة موظف جديد</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">➕ إضافة سجل جديد</h3>
                     <div class="form-grid">
-                        <input type="text" id="empId" placeholder="الرقم الوظيفي (ID)">
+                        <select id="logZone">
+                            <option value="">اختر المنطقة...</option>
+                        </select>
+                        <input type="date" id="logDate">
+                        <input type="time" id="logTime">
+                        <select id="logStatus">
+                            <option value="">الحالة...</option>
+                            <option value="ممتاز">✅ ممتاز</option>
+                            <option value="يحتاج تحسين">⚠️ يحتاج تحسين</option>
+                            <option value="غير مقبول">❌ غير مقبول</option>
+                        </select>
+                        <input type="text" id="logNotes" placeholder="ملاحظات (اختياري)">
+                    </div>
+                    <button class="btn-success btn-lg" onclick="addLog()" style="width: 100%;">
+                        ✅ حفظ السجل
+                    </button>
+                </div>
+                <div id="logsList"></div>
+            </div>
+
+            <!-- 👥 Employees Section (Admin Only) -->
+            <div id="tab-employees" class="tab-content">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">➕ إضافة موظف</h3>
+                    <div class="form-grid">
+                        <input type="text" id="empId" placeholder="الرقم الوظيفي">
                         <input type="text" id="empNameAr" placeholder="الاسم بالعربي">
                         <input type="text" id="empNameEn" placeholder="الاسم بالإنجليزي">
                         <input type="password" id="empPass" placeholder="كلمة المرور">
-                        <select id="empRole">
-                            <option value="">اختر الرتبة الوظيفية...</option>
+                        <select id="empRole" onchange="togglePermissions()">
+                            <option value="">اختر الرتبة...</option>
                             <option value="مدير">👔 مدير</option>
                             <option value="استقبال">📞 استقبال</option>
                             <option value="عامل نظافة">🧹 عامل نظافة</option>
                             <option value="مشرف">📋 مشرف</option>
-                            <option value="أخرى">أخرى</option>
                         </select>
                     </div>
-                    <button class="btn-success btn-lg" onclick="addEmployee()" style="width: 100%;">
+                    
+                    <!-- Permissions Section -->
+                    <div class="permission-group">
+                        <h4>🔐 الصلاحيات</h4>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="perm-add-logs">
+                                <span>📝 إضافة سجلات</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="perm-view-logs">
+                                <span>👁️ عرض السجلات</span>
+                            </label>
+                            <label class="checkbox-item" class="admin-only">
+                                <input type="checkbox" id="perm-manage-employees">
+                                <span>👥 إدارة الموظفين</span>
+                            </label>
+                            <label class="checkbox-item" class="admin-only">
+                                <input type="checkbox" id="perm-manage-zones">
+                                <span>📍 إدارة المناطق</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn-success btn-lg" onclick="addEmployee()" style="width: 100%; margin-top: 15px;">
                         ✅ حفظ الموظف
                     </button>
                 </div>
-
                 <div id="empList"></div>
             </div>
 
-            <!-- 📍 قسم المناطق -->
+            <!-- 📍 Zones Section (Admin Only) -->
             <div id="tab-zones" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">📍 إضافة منطقة جديدة</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">📍 إضافة منطقة</h3>
                     <div class="form-grid">
-                        <input type="text" id="zoneId" placeholder="معرف المنطقة (Z01)">
+                        <input type="text" id="zoneId" placeholder="معرف المنطقة">
                         <input type="text" id="zoneNameAr" placeholder="الاسم بالعربي">
                         <input type="text" id="zoneNameEn" placeholder="الاسم بالإنجليزي">
                     </div>
@@ -443,37 +503,14 @@
                 </div>
                 <div id="zoneList"></div>
             </div>
-
-            <!-- 📋 قسم السجلات -->
-            <div id="tab-logs" class="tab-content">
-                <div class="card">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-dark); font-size: 22px;">🔍 تصفية السجلات</h3>
-                    <div class="form-grid">
-                        <input type="date" id="filterDate">
-                        <select id="filterZone">
-                            <option value="">كل المناطق</option>
-                        </select>
-                        <select id="filterStatus">
-                            <option value="">كل الحالات</option>
-                            <option value="ممتاز">ممتاز</option>
-                            <option value="يحتاج تحسين">يحتاج تحسين</option>
-                            <option value="غير مقبول">غير مقبول</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary btn-lg" onclick="loadLogs()" style="width: 100%;">
-                        🔍 تطبيق الفلتر
-                    </button>
-                </div>
-                <div id="logsList"></div>
-            </div>
         </div>
     </div>
 
-    <!-- نافذة تعديل الموظف -->
+    <!-- Edit Modal -->
     <div id="editModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="color: var(--primary-dark); font-size: 22px;">✏️ تعديل بيانات الموظف</h3>
+                <h3>✏️ تعديل موظف</h3>
                 <button class="close-modal" onclick="closeModal()">×</button>
             </div>
             <input type="hidden" id="editEmpOldId">
@@ -481,17 +518,16 @@
                 <input type="text" id="editEmpId" placeholder="الرقم الوظيفي" readonly>
                 <input type="text" id="editEmpNameAr" placeholder="الاسم بالعربي">
                 <input type="text" id="editEmpNameEn" placeholder="الاسم بالإنجليزي">
-                <input type="password" id="editEmpPass" placeholder="كلمة المرور الجديدة (اختياري)">
+                <input type="password" id="editEmpPass" placeholder="كلمة المرور الجديدة">
                 <select id="editEmpRole">
                     <option value="مدير">👔 مدير</option>
                     <option value="استقبال">📞 استقبال</option>
                     <option value="عامل نظافة">🧹 عامل نظافة</option>
                     <option value="مشرف">📋 مشرف</option>
-                    <option value="أخرى">أخرى</option>
                 </select>
             </div>
             <button class="btn-success btn-lg" onclick="saveEdit()" style="width: 100%;">
-                💾 حفظ التعديلات
+                💾 حفظ
             </button>
         </div>
     </div>
@@ -500,12 +536,13 @@
         const API = '/api';
         let token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || 'null');
-        let allLogs = [];
         let allZones = [];
 
         if (token && user) {
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('adminView').classList.remove('hidden');
+            document.getElementById('userName').textContent = user.name_ar || user.name_en;
+            setupPermissions();
             loadData();
         }
 
@@ -518,11 +555,17 @@
                 },
                 body: body ? JSON.stringify(body) : null
             });
-            if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.error || 'Request failed');
+            
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await res.text();
+                console.error('Received HTML instead of JSON:', text.substring(0, 200));
+                throw new Error('Server error - received HTML instead of JSON');
             }
-            return res.json();
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Request failed');
+            return data;
         }
 
         async function login() {
@@ -546,6 +589,60 @@
             location.reload();
         }
 
+        function setupPermissions() {
+            const perms = user.permissions || {};
+            
+            // Hide admin tabs if not authorized
+            if (!perms.can_manage_employees) {
+                document.getElementById('tab-employees-btn').classList.add('hidden');
+            }
+            if (!perms.can_manage_zones) {
+                document.getElementById('tab-zones-btn').classList.add('hidden');
+            }
+
+            // Set default permissions based on role
+            if (user.role === 'عامل نظافة') {
+                document.getElementById('perm-add-logs').checked = true;
+                document.getElementById('perm-view-logs').checked = true;
+                document.getElementById('perm-manage-employees').checked = false;
+                document.getElementById('perm-manage-zones').checked = false;
+            } else if (user.role === 'مدير') {
+                document.getElementById('perm-add-logs').checked = true;
+                document.getElementById('perm-view-logs').checked = true;
+                document.getElementById('perm-manage-employees').checked = true;
+                document.getElementById('perm-manage-zones').checked = true;
+            }
+        }
+
+        function togglePermissions() {
+            const role = document.getElementById('empRole').value;
+            const addLogs = document.getElementById('perm-add-logs');
+            const viewLogs = document.getElementById('perm-view-logs');
+            const manageEmp = document.getElementById('perm-manage-employees');
+            const manageZones = document.getElementById('perm-manage-zones');
+
+            // Reset all
+            addLogs.checked = false;
+            viewLogs.checked = false;
+            manageEmp.checked = false;
+            manageZones.checked = false;
+
+            if (role === 'عامل نظافة') {
+                addLogs.checked = true;
+                viewLogs.checked = true;
+            } else if (role === 'مدير') {
+                addLogs.checked = true;
+                viewLogs.checked = true;
+                manageEmp.checked = true;
+                manageZones.checked = true;
+            } else if (role === 'مشرف') {
+                addLogs.checked = true;
+                viewLogs.checked = true;
+                manageEmp.checked = false;
+                manageZones.checked = false;
+            }
+        }
+
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -555,34 +652,111 @@
 
         async function loadData() {
             try {
-                await Promise.all([loadEmployees(), loadZones(), loadLogs()]);
+                if (user.permissions?.can_manage_employees) {
+                    await loadEmployees();
+                }
+                if (user.permissions?.can_manage_zones) {
+                    await loadZones();
+                }
+                await loadLogs();
             } catch (e) {
                 console.error('Error loading data:', e);
             }
         }
 
-        // 👥 الموظفين
+        // Logs
+        async function loadLogs() {
+            try {
+                const logs = await apiCall(`${API}/logs`);
+                document.getElementById('totalLogs').textContent = logs.length;
+                
+                let html = '<div class="table-container"><table><thead><tr>';
+                html += '<th>التاريخ</th><th>الوقت</th><th>المنطقة</th><th>الموظف</th><th>الحالة</th><th>ملاحظات</th>';
+                if (user.permissions?.can_manage_employees) html += '<th>حذف</th>';
+                html += '</tr></thead><tbody>';
+                
+                if (logs.length === 0) {
+                    html += '<tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-light);">لا توجد سجلات</td></tr>';
+                } else {
+                    logs.forEach(l => {
+                        const statusClass = `status-${l.status.replace(/ /g, '-')}`;
+                        html += `<tr>
+                            <td>${l.date}</td>
+                            <td>${l.time}</td>
+                            <td>${l.zone_name_ar || l.zone_name_en}</td>
+                            <td>${l.emp_name_ar || l.emp_name_en}</td>
+                            <td><span class="badge ${statusClass}">${l.status}</span></td>
+                            <td>${l.notes}</td>
+                            ${user.permissions?.can_manage_employees ? `<td><button class="btn-danger btn-sm" onclick="deleteLog('${l.id}')">🗑️</button></td>` : ''}
+                        </tr>`;
+                    });
+                }
+                
+                html += '</tbody></table></div>';
+                document.getElementById('logsList').innerHTML = html;
+            } catch (e) {
+                alert('❌ فشل تحميل السجلات: ' + e.message);
+            }
+        }
+
+        async function addLog() {
+            const zone_id = document.getElementById('logZone').value;
+            const date = document.getElementById('logDate').value;
+            const time = document.getElementById('logTime').value;
+            const status = document.getElementById('logStatus').value;
+            const notes = document.getElementById('logNotes').value;
+
+            if (!zone_id || !date || !time || !status) {
+                return alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
+            }
+
+            try {
+                await apiCall(`${API}/logs`, 'POST', { zone_id, status, notes, date, time });
+                alert('✅ تم إضافة السجل بنجاح');
+                document.getElementById('logZone').value = '';
+                document.getElementById('logDate').value = '';
+                document.getElementById('logTime').value = '';
+                document.getElementById('logStatus').value = '';
+                document.getElementById('logNotes').value = '';
+                await loadLogs();
+            } catch (e) {
+                alert('❌ فشل إضافة السجل: ' + e.message);
+            }
+        }
+
+        async function deleteLog(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            try {
+                await apiCall(`${API}/logs/${id}`, 'DELETE');
+                alert('✅ تم الحذف');
+                await loadLogs();
+            } catch (e) {
+                alert('❌ فشل الحذف: ' + e.message);
+            }
+        }
+
+        // Employees (Admin only)
         async function loadEmployees() {
             try {
                 const emps = await apiCall(`${API}/employees`);
                 document.getElementById('totalEmployees').textContent = emps.length;
                 
                 let html = '<div class="table-container"><table><thead><tr>';
-                html += '<th>الرقم الوظيفي</th><th>الاسم</th><th>الرتبة</th><th>الإجراءات</th>';
+                html += '<th>الرقم</th><th>الاسم</th><th>الرتبة</th><th>الإجراءات</th>';
                 html += '</tr></thead><tbody>';
                 
                 if (emps.length === 0) {
-                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">لا يوجد موظفين</td></tr>';
+                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px;">لا يوجد موظفين</td></tr>';
                 } else {
                     emps.forEach(e => {
                         const roleClass = `role-${e.role.replace(/ /g, '-')}`;
                         html += `<tr>
                             <td><strong>${e.id}</strong></td>
                             <td>${e.name_ar}</td>
-                            <td><span class="badge ${roleClass}">${getRoleIcon(e.role)} ${e.role}</span></td>
+                            <td><span class="badge ${roleClass}">${e.role}</span></td>
                             <td>
-                                <button class="btn-warning btn-sm" onclick="openEdit('${e.id}')">✏️ تعديل</button>
-                                <button class="btn-danger btn-sm" onclick="deleteEmployee('${e.id}')">🗑️ حذف</button>
+                                <button class="btn-warning btn-sm" onclick="openEdit('${e.id}')">✏️</button>
+                                <button class="btn-danger btn-sm" onclick="deleteEmployee('${e.id}')">🗑️</button>
                             </td>
                         </tr>`;
                     });
@@ -595,16 +769,6 @@
             }
         }
 
-        function getRoleIcon(role) {
-            const icons = {
-                'مدير': '👔',
-                'استقبال': '📞',
-                'عامل نظافة': '🧹',
-                'مشرف': '📋'
-            };
-            return icons[role] || '👤';
-        }
-
         async function addEmployee() {
             const id = document.getElementById('empId').value.trim();
             const nameAr = document.getElementById('empNameAr').value.trim();
@@ -613,36 +777,47 @@
             const role = document.getElementById('empRole').value;
 
             if (!id || !nameAr || !nameEn || !password || !role) {
-                return alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
+                return alert('⚠️ يرجى ملء جميع الحقول');
             }
+
+            const permissions = {
+                can_add_logs: document.getElementById('perm-add-logs').checked,
+                can_view_logs: document.getElementById('perm-view-logs').checked,
+                can_manage_employees: document.getElementById('perm-manage-employees').checked,
+                can_manage_zones: document.getElementById('perm-manage-zones').checked
+            };
 
             try {
                 await apiCall(`${API}/employees`, 'POST', {
-                    id, name_ar: nameAr, name_en: nameEn, password, role
+                    id, name_ar: nameAr, name_en: nameEn, password, role, permissions
                 });
-                alert('✅ تم إضافة الموظف بنجاح');
-                // تفريغ الحقول
-                document.getElementById('empId').value = '';
-                document.getElementById('empNameAr').value = '';
-                document.getElementById('empNameEn').value = '';
-                document.getElementById('empPass').value = '';
-                document.getElementById('empRole').value = '';
+                alert('✅ تم الإضافة');
+                clearEmployeeForm();
                 await loadEmployees();
             } catch (e) {
-                alert('❌ فشل إضافة الموظف: ' + e.message);
+                alert('❌ فشل الإضافة: ' + e.message);
             }
         }
 
-        function openEdit(id) {
-            // سيتم ملء البيانات عبر loadEmployees ثم فتح النافذة
-            loadEmployeeData(id);
+        function clearEmployeeForm() {
+            document.getElementById('empId').value = '';
+            document.getElementById('empNameAr').value = '';
+            document.getElementById('empNameEn').value = '';
+            document.getElementById('empPass').value = '';
+            document.getElementById('empRole').value = '';
+            document.getElementById('perm-add-logs').checked = false;
+            document.getElementById('perm-view-logs').checked = false;
+            document.getElementById('perm-manage-employees').checked = false;
+            document.getElementById('perm-manage-zones').checked = false;
         }
 
-        async function loadEmployeeData(id) {
+        async function openEdit(id) {
             try {
                 const emps = await apiCall(`${API}/employees`);
                 const emp = emps.find(e => e.id === id);
                 if (!emp) return;
+
+                const perms = typeof emp.permissions === 'string' ? JSON.parse(emp.permissions) : emp.permissions;
 
                 document.getElementById('editEmpOldId').value = emp.id;
                 document.getElementById('editEmpId').value = emp.id;
@@ -663,22 +838,28 @@
 
         async function saveEdit() {
             const oldId = document.getElementById('editEmpOldId').value;
-            const newId = document.getElementById('editEmpId').value.trim();
             const nameAr = document.getElementById('editEmpNameAr').value.trim();
             const nameEn = document.getElementById('editEmpNameEn').value.trim();
             const password = document.getElementById('editEmpPass').value;
             const role = document.getElementById('editEmpRole').value;
 
-            if (!newId || !nameAr || !nameEn || !role) {
-                return alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
+            if (!nameAr || !nameEn || !role) {
+                return alert('⚠️ يرجى ملء الحقول المطلوبة');
             }
 
+            const permissions = {
+                can_add_logs: document.getElementById('perm-add-logs').checked,
+                can_view_logs: document.getElementById('perm-view-logs').checked,
+                can_manage_employees: document.getElementById('perm-manage-employees').checked,
+                can_manage_zones: document.getElementById('perm-manage-zones').checked
+            };
+
             try {
-                const body = { name_ar: nameAr, name_en: nameEn, role };
+                const body = { name_ar: nameAr, name_en: nameEn, role, permissions };
                 if (password) body.password = password;
                 
                 await apiCall(`${API}/employees/${oldId}`, 'PUT', body);
-                alert('✅ تم تعديل البيانات بنجاح');
+                alert('✅ تم التعديل');
                 closeModal();
                 await loadEmployees();
             } catch (e) {
@@ -688,49 +869,48 @@
 
         async function deleteEmployee(id) {
             if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
-            
             try {
                 await apiCall(`${API}/employees/${id}`, 'DELETE');
-                alert('✅ تم حذف الموظف بنجاح');
+                alert('✅ تم الحذف');
                 await loadEmployees();
             } catch (e) {
                 alert('❌ فشل الحذف: ' + e.message);
             }
         }
 
-        // 📍 المناطق
+        // Zones (Admin only)
         async function loadZones() {
             try {
                 const zones = await apiCall(`${API}/zones`);
                 document.getElementById('totalZones').textContent = zones.length;
                 allZones = zones;
                 
+                // Update zone select in logs form
+                const zoneSelect = document.getElementById('logZone');
+                zoneSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                zones.forEach(z => {
+                    zoneSelect.innerHTML += `<option value="${z.id}">${z.name_ar} (${z.name_en})</option>`;
+                });
+                
                 let html = '<div class="table-container"><table><thead><tr>';
-                html += '<th>المعرف</th><th>الاسم (عربي)</th><th>الاسم (إنجليزي)</th><th>الإجراءات</th>';
+                html += '<th>المعرف</th><th>الاسم (عربي)</th><th>الاسم (إنجليزي)</th><th>حذف</th>';
                 html += '</tr></thead><tbody>';
                 
                 if (zones.length === 0) {
-                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">لا توجد مناطق</td></tr>';
+                    html += '<tr><td colspan="4" style="text-align: center; padding: 30px;">لا توجد مناطق</td></tr>';
                 } else {
                     zones.forEach(z => {
                         html += `<tr>
                             <td><strong>${z.id}</strong></td>
                             <td>${z.name_ar}</td>
                             <td>${z.name_en}</td>
-                            <td><button class="btn-danger btn-sm" onclick="deleteZone('${z.id}')">🗑️ حذف</button></td>
+                            <td><button class="btn-danger btn-sm" onclick="deleteZone('${z.id}')">🗑️</button></td>
                         </tr>`;
                     });
                 }
                 
                 html += '</tbody></table></div>';
                 document.getElementById('zoneList').innerHTML = html;
-                
-                // تحديث فلتر المناطق
-                const filterSelect = document.getElementById('filterZone');
-                filterSelect.innerHTML = '<option value="">كل المناطق</option>';
-                zones.forEach(z => {
-                    filterSelect.innerHTML += `<option value="${z.id}">${z.name_ar}</option>`;
-                });
             } catch (e) {
                 alert('❌ فشل تحميل المناطق: ' + e.message);
             }
@@ -747,85 +927,30 @@
 
             try {
                 await apiCall(`${API}/zones`, 'POST', { id, name_ar: nameAr, name_en: nameEn });
-                alert('✅ تم إضافة المنطقة بنجاح');
+                alert('✅ تم الإضافة');
                 document.getElementById('zoneId').value = '';
                 document.getElementById('zoneNameAr').value = '';
                 document.getElementById('zoneNameEn').value = '';
                 await loadZones();
             } catch (e) {
-                alert('❌ فشل إضافة المنطقة: ' + e.message);
+                alert('❌ فشل الإضافة: ' + e.message);
             }
         }
 
         async function deleteZone(id) {
-            if (!confirm('هل أنت متأكد من حذف هذه المنطقة؟')) return;
-            
+            if (!confirm('هل أنت متأكد؟')) return;
             try {
                 await apiCall(`${API}/zones/${id}`, 'DELETE');
-                alert('✅ تم حذف المنطقة بنجاح');
+                alert('✅ تم الحذف');
                 await loadZones();
             } catch (e) {
                 alert('❌ فشل الحذف: ' + e.message);
             }
         }
 
-        // 📋 السجلات
-        async function loadLogs() {
-            try {
-                allLogs = await apiCall(`${API}/logs`);
-                document.getElementById('totalLogs').textContent = allLogs.length;
-                displayLogs(allLogs);
-            } catch (e) {
-                alert('❌ فشل تحميل السجلات: ' + e.message);
-            }
-        }
-
-        function displayLogs(logs) {
-            let html = '<div class="table-container"><table><thead><tr>';
-            html += '<th>التاريخ</th><th>الوقت</th><th>المنطقة</th><th>الموظف</th><th>الرتبة</th><th>الحالة</th><th>الملاحظات</th><th>الإجراءات</th>';
-            html += '</tr></thead><tbody>';
-            
-            if (logs.length === 0) {
-                html += '<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">لا توجد سجلات</td></tr>';
-            } else {
-                logs.forEach(l => {
-                    const statusClass = `status-${l.status.replace(/ /g, '-')}`;
-                    const roleClass = `role-${(l.emp_role || 'أخرى').replace(/ /g, '-')}`;
-                    html += `<tr>
-                        <td>${l.date}</td>
-                        <td>${l.time}</td>
-                        <td>${l.zone_name_ar || l.zone_name_en}</td>
-                        <td>${l.emp_name_ar || l.emp_name_en}</td>
-                        <td><span class="badge ${roleClass}">${getRoleIcon(l.emp_role)} ${l.emp_role || '-'}</span></td>
-                        <td><span class="badge ${statusClass}">${l.status}</span></td>
-                        <td>${l.notes}</td>
-                        <td><button class="btn-danger btn-sm" onclick="deleteLog('${l.id}')">🗑️ حذف</button></td>
-                    </tr>`;
-                });
-            }
-            
-            html += '</tbody></table></div>';
-            document.getElementById('logsList').innerHTML = html;
-        }
-
-        async function deleteLog(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
-            
-            try {
-                await apiCall(`${API}/logs/${id}`, 'DELETE');
-                alert('✅ تم حذف السجل بنجاح');
-                await loadLogs();
-            } catch (e) {
-                alert('❌ فشل الحذف: ' + e.message);
-            }
-        }
-
-        // إغلاق النافذة عند الضغط خارجها
         window.onclick = function(event) {
             const modal = document.getElementById('editModal');
-            if (event.target === modal) {
-                closeModal();
-            }
+            if (event.target === modal) closeModal();
         }
     </script>
 </body>
