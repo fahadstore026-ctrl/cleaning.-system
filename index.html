@@ -264,83 +264,29 @@
             flex-wrap: wrap;
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             body { padding: 10px; }
-            
-            .logo { 
-                flex-direction: column; 
-                text-align: center;
-                padding: 15px;
-            }
-            
+            .logo { flex-direction: column; text-align: center; padding: 15px; }
             .logo-icon { width: 50px; height: 50px; font-size: 28px; }
             .logo-text { font-size: 22px; }
-            
-            .header { 
-                flex-direction: column; 
-                text-align: center; 
-                gap: 10px;
-            }
-            
+            .header { flex-direction: column; text-align: center; gap: 10px; }
             .header h2 { font-size: 20px; }
-            
-            .form-grid { 
-                grid-template-columns: 1fr; 
-            }
-            
-            .tabs { 
-                flex-direction: column;
-            }
-            
-            .tab-btn { 
-                width: 100%;
-                min-width: unset;
-            }
-            
-            table { 
-                font-size: 11px;
-                min-width: 400px;
-            }
-            
-            th, td { 
-                padding: 8px;
-            }
-            
-            button { 
-                padding: 8px 16px; 
-                font-size: 13px;
-                margin: 3px;
-            }
-            
-            .btn-lg { 
-                padding: 12px 20px; 
-                font-size: 14px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .export-buttons {
-                flex-direction: column;
-            }
-            
-            .export-buttons button {
-                width: 100%;
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            .tabs { flex-direction: column; }
+            .tab-btn { width: 100%; min-width: unset; }
+            table { font-size: 11px; min-width: 400px; }
+            th, td { padding: 8px; }
+            button { padding: 8px 16px; font-size: 13px; margin: 3px; }
+            .btn-lg { padding: 12px 20px; font-size: 14px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .export-buttons { flex-direction: column; }
+            .export-buttons button { width: 100%; }
         }
 
         @media (max-width: 480px) {
             .logo-text { font-size: 18px; }
             .header h2 { font-size: 18px; }
             input, select { padding: 10px 12px; font-size: 13px; }
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -704,15 +650,12 @@
                 format: 'a4'
             });
 
-            // Title
             doc.setFontSize(18);
             doc.text('تقرير سجلات النظافة', 105, 15, { align: 'center' });
             
-            // Date
             doc.setFontSize(12);
             doc.text(`تاريخ التصدير: ${new Date().toLocaleDateString('ar-SA')}`, 105, 25, { align: 'center' });
 
-            // Table headers
             doc.setFontSize(11);
             const headers = ['التاريخ', 'الوقت', 'المنطقة', 'الموظف', 'الحالة', 'ملاحظات'];
             let yPos = 40;
@@ -721,7 +664,6 @@
                 doc.text(header, 190 - (index * 30), yPos);
             });
 
-            // Table rows
             doc.setFontSize(9);
             yPos += 10;
             
@@ -747,7 +689,6 @@
                 yPos += 8;
             });
 
-            // Save
             doc.save(`cleaning-logs-${new Date().toISOString().split('T')[0]}.pdf`);
             alert('✅ تم تصدير PDF بنجاح');
         }
